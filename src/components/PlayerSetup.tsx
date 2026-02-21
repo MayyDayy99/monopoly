@@ -110,113 +110,120 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                     )}
                 </AnimatePresence>
 
-                {/* Player Inputs */}
-                {Array.from({ length: playerCount }).map((_, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.5rem',
-                            alignItems: 'center',
-                            marginBottom: '0.75rem',
-                            padding: '0.5rem',
-                            background: 'var(--bg-surface)',
-                            borderRadius: '10px',
-                            border: `1px solid ${players[i].color}33`,
-                        }}
-                    >
-                        {/* Token selector */}
-                        <select
-                            value={players[i].token}
-                            onChange={e => updatePlayer(i, 'token', e.target.value)}
+                {/* Player Inputs - Scrollable if many players */}
+                <div className="setup-players-list" style={{
+                    maxHeight: '38vh',
+                    overflowY: 'auto',
+                    paddingRight: '0.5rem',
+                    marginBottom: '1rem'
+                }}>
+                    {Array.from({ length: playerCount }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
                             style={{
-                                background: 'var(--bg-card)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '6px',
-                                padding: '0.4rem 0.3rem',
-                                fontSize: '0.7rem',
-                                color: 'var(--text-primary)',
-                                cursor: 'pointer',
-                                width: '80px',
-                                fontFamily: "'JetBrains Mono', monospace",
+                                display: 'flex',
+                                gap: '0.5rem',
+                                alignItems: 'center',
+                                marginBottom: '0.75rem',
+                                padding: '0.5rem',
+                                background: 'var(--bg-surface)',
+                                borderRadius: '10px',
+                                border: `1px solid ${players[i].color}33`,
                             }}
                         >
-                            {TOKEN_REGISTRY.map(t => (
-                                <option
-                                    key={t.emoji}
-                                    value={t.emoji}
-                                    disabled={usedTokens.includes(t.emoji) && players[i].token !== t.emoji}
-                                >
-                                    {t.emoji} {t.name}
-                                </option>
-                            ))}
-                        </select>
-
-                        {/* Name input */}
-                        <input
-                            className="setup-input"
-                            value={players[i].name}
-                            onChange={e => updatePlayer(i, 'name', e.target.value)}
-                            placeholder={`Játékos ${i + 1} neve`}
-                            maxLength={15}
-                            style={{ flex: 1, minWidth: 0 }}
-                        />
-
-                        {/* Bot toggle (#73) */}
-                        <div className="bot-toggle-wrapper"
-                            onMouseEnter={() => setHoveredBotBtn(i)}
-                            onMouseLeave={() => setHoveredBotBtn(null)}
-                        >
-                            <motion.button
-                                onClick={() => {
-                                    updatePlayer(i, 'isBot', !players[i].isBot);
-                                    if (!players[i].isBot) setShowBotHint(false);
+                            {/* Token selector */}
+                            <select
+                                value={players[i].token}
+                                onChange={e => updatePlayer(i, 'token', e.target.value)}
+                                style={{
+                                    background: 'var(--bg-card)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '6px',
+                                    padding: '0.4rem 0.3rem',
+                                    fontSize: '0.7rem',
+                                    color: 'var(--text-primary)',
+                                    cursor: 'pointer',
+                                    width: '80px',
+                                    fontFamily: "'JetBrains Mono', monospace",
                                 }}
-                                title={players[i].isBot ? 'AI bot — kattints az emberi játékoshoz' : 'Kattints a bot módhoz'}
-                                className={`bot-toggle-btn ${players[i].isBot ? 'bot-active' : ''} ${!players[i].isBot && showBotHint ? 'bot-toggle-pulse' : ''}`}
-                                whileTap={{ scale: 0.9 }}
                             >
-                                <motion.span
-                                    key={players[i].isBot ? 'bot' : 'human'}
-                                    initial={{ rotateY: 90, opacity: 0 }}
-                                    animate={{ rotateY: 0, opacity: 1 }}
-                                    transition={{ duration: 0.25 }}
-                                    style={{ display: 'inline-block' }}
-                                >
-                                    {players[i].isBot ? '🤖' : '👤'}
-                                </motion.span>
-                            </motion.button>
-
-                            {/* Tooltip */}
-                            <AnimatePresence>
-                                {hoveredBotBtn === i && (
-                                    <motion.div
-                                        className="bot-tooltip"
-                                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                                        transition={{ duration: 0.15 }}
+                                {TOKEN_REGISTRY.map(t => (
+                                    <option
+                                        key={t.emoji}
+                                        value={t.emoji}
+                                        disabled={usedTokens.includes(t.emoji) && players[i].token !== t.emoji}
                                     >
-                                        {players[i].isBot ? 'Kattints az emberi módhoz' : 'Kattints a bot módhoz'}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                                        {t.emoji} {t.name}
+                                    </option>
+                                ))}
+                            </select>
 
-                        {/* Color indicator */}
-                        <div style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            background: players[i].color,
-                            flexShrink: 0,
-                            boxShadow: `0 0 8px ${players[i].color}66`,
-                        }} />
-                    </motion.div>
-                ))}
+                            {/* Name input */}
+                            <input
+                                className="setup-input"
+                                value={players[i].name}
+                                onChange={e => updatePlayer(i, 'name', e.target.value)}
+                                placeholder={`Játékos ${i + 1} neve`}
+                                maxLength={15}
+                                style={{ flex: 1, minWidth: 0 }}
+                            />
+
+                            {/* Bot toggle (#73) */}
+                            <div className="bot-toggle-wrapper"
+                                onMouseEnter={() => setHoveredBotBtn(i)}
+                                onMouseLeave={() => setHoveredBotBtn(null)}
+                            >
+                                <motion.button
+                                    onClick={() => {
+                                        updatePlayer(i, 'isBot', !players[i].isBot);
+                                        if (!players[i].isBot) setShowBotHint(false);
+                                    }}
+                                    title={players[i].isBot ? 'AI bot — kattints az emberi játékoshoz' : 'Kattints a bot módhoz'}
+                                    className={`bot-toggle-btn ${players[i].isBot ? 'bot-active' : ''} ${!players[i].isBot && showBotHint ? 'bot-toggle-pulse' : ''}`}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <motion.span
+                                        key={players[i].isBot ? 'bot' : 'human'}
+                                        initial={{ rotateY: 90, opacity: 0 }}
+                                        animate={{ rotateY: 0, opacity: 1 }}
+                                        transition={{ duration: 0.25 }}
+                                        style={{ display: 'inline-block' }}
+                                    >
+                                        {players[i].isBot ? '🤖' : '👤'}
+                                    </motion.span>
+                                </motion.button>
+
+                                {/* Tooltip */}
+                                <AnimatePresence>
+                                    {hoveredBotBtn === i && (
+                                        <motion.div
+                                            className="bot-tooltip"
+                                            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                            transition={{ duration: 0.15 }}
+                                        >
+                                            {players[i].isBot ? 'Kattints az emberi módhoz' : 'Kattints a bot módhoz'}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Color indicator */}
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '50%',
+                                background: players[i].color,
+                                flexShrink: 0,
+                                boxShadow: `0 0 8px ${players[i].color}66`,
+                            }} />
+                        </motion.div>
+                    ))}
+                </div>
 
                 {/* House Rules button */}
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>

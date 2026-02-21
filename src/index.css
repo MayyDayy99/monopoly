@@ -623,29 +623,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem;
   background: transparent;
-  /* A Canvas látszik alatta */
+  overflow-y: auto;
+  /* Allow scrolling if card is too big */
 }
 
 .setup-card {
   background: rgba(15, 23, 42, 0.85);
-  /* Semi-transparent Loricatus Deep */
   backdrop-filter: blur(12px);
   border: 1px solid rgba(199, 254, 27, 0.2);
   border-radius: 24px;
-  padding: 3rem;
+  padding: 2rem;
+  /* Reduced from 3rem */
   max-width: 500px;
   width: 100%;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(199, 254, 27, 0.05);
   position: relative;
   z-index: 10;
+  margin: auto;
+  /* Center in scrollable container */
 }
 
 .setup-title {
   font-family: 'Orbitron', 'Inter', sans-serif;
   font-weight: 900;
-  font-size: 2.5rem;
+  font-size: 2rem;
+  /* Reduced from 2.5rem */
   text-align: center;
   background: linear-gradient(135deg, var(--neon), #d4ff57, var(--cyber));
   -webkit-background-clip: text;
