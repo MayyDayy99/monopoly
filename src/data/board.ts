@@ -1,5 +1,5 @@
 // ============================================================
-// LORICATUS-OPOLY BOARD DATA — 40 Magyar Műemlék & Tech Mező
+// Monopoly by Loricatus BOARD DATA — 40 Magyar Műemlék & Tech Mező
 // "Digitalizáld a múltat, építsd a jövőt!"
 // ============================================================
 import type { BoardSpace } from '../types';

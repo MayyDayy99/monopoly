@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   LORICATUS-OPOLY — Tech-Noir Design System
+   Monopoly by Loricatus Design System
    "Digitalizáld a múltat, építsd a jövőt!"
    ============================================================ */
 
@@ -44,7 +44,7 @@
   --gold-light: #d4ff57;
   --gold-dark: #a3d914;
 
-  /* ── Property Colors (refined for Tech-Noir) ── */
+  /* ── Property Colors ── */
   --prop-brown: #92400e;
   --prop-lightblue: #38bdf8;
   --prop-pink: #e879f9;

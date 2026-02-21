@@ -1,5 +1,5 @@
 // ============================================================
-// LORICATUS HUD — Bal oldali vezérlőpanel
+// Monopoly by Loricatus HUD — Bal oldali vezérlőpanel
 // Az aktuális játékos hatalmas SVG bábuja, neve, egyenlege,
 // állapotjelző. Kompakt — a ControlPanel a tábla közepén van.
 // ============================================================
@@ -21,6 +21,11 @@ export function LoricatusHUD() {
 
     return (
         <div className="hud-current-player">
+            {/* ── Logo ── */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', opacity: 0.8 }}>
+                <img src="/assets/logo_kicsi.png" alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
+            </div>
+
             {/* ── Nagy token konténer ── */}
             <div className="hud-token-container" data-state={state.tokenAnimState}>
                 <div className="hud-token-glow" style={{

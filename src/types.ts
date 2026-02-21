@@ -1,5 +1,5 @@
 // ============================================================
-// LORICATUS-OPOLY — TYPE DEFINITIONS
+// Monopoly by Loricatus — TYPE DEFINITIONS
 // ============================================================
 
 // ---- Token Animation State ----

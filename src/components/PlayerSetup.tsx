@@ -54,8 +54,10 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-                <h1 className="setup-title">LORICATUS-OPOLY</h1>
-                <p className="setup-subtitle">Magyar Műemlékek • 3D Digitalizáció • Tech-Noir</p>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                    <img src="/assets/logo_kicsi.png" alt="Loricatus Logo" style={{ width: '80px', height: 'auto' }} />
+                </div>
+                <h1 className="setup-title">Monopoly by Loricatus</h1>
 
                 {/* Player Count */}
                 <div style={{ marginBottom: '1.5rem' }}>
