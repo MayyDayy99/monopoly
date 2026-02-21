@@ -97,7 +97,7 @@ export function Board() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '1.5rem 0' }}>
                         <div style={{ textAlign: 'center', width: '80%' }}>
-                            <img src="/Logo_2B3B46.png" alt="Loricatus Banner" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 0 15px var(--neon-glow))', marginBottom: '0.2rem' }} />
+                            <img src="./assets/Logo_2B3B46.png" alt="Loricatus Banner" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 0 15px var(--neon-glow))', marginBottom: '0.2rem' }} />
                             <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 400, fontSize: '0.55rem', color: 'var(--text-secondary)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
                                 Magyar Műemlékek • 3D Digitalizáció
                             </div>

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GameProvider } from './engine/GameContext';
 import { useGame } from './engine/GameHooks';
 import { PlayerSetup } from './components/PlayerSetup';
@@ -69,31 +70,58 @@ function GameContent() {
 }
 
 function CollapsibleEventLog() {
-  const [isOpen, setIsOpen] = useState(true);
+  const { state } = useGame();
+  const [isOpen, setIsOpen] = useState(false);
+  const lastLog = state.logs[state.logs.length - 1];
+
   return (
     <div className="sidebar-card">
       <div
         onClick={() => setIsOpen(o => !o)}
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '0.8rem',
           cursor: 'pointer',
           userSelect: 'none',
         }}
       >
-        <h3 style={{ margin: 0 }}>📋 Eseménynapló</h3>
+        <h3 style={{ margin: 0, whiteSpace: 'nowrap' }}>📋 Napló</h3>
+        {!isOpen && lastLog && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 5 }}
+              key={lastLog.id}
+              style={{
+                fontSize: '0.68rem',
+                color: 'var(--text-secondary)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: 1,
+                fontFamily: "'JetBrains Mono', monospace",
+                borderLeft: '1px solid var(--border-muted)',
+                paddingLeft: '0.5rem'
+              }}
+            >
+              {lastLog.message}
+            </motion.div>
+          </AnimatePresence>
+        )}
         <span style={{
           fontSize: '0.8rem',
           color: 'var(--neon)',
           transition: 'transform 0.2s',
           transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          marginLeft: 'auto'
         }}>
           ▼
         </span>
       </div>
       {isOpen && (
-        <div style={{ marginTop: '0.5rem' }}>
+        <div style={{ marginTop: '0.75rem' }}>
           <EventLog />
         </div>
       )}

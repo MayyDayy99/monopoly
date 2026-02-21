@@ -93,56 +93,112 @@ export const LoricatusBackground: React.FC = () => {
             draw(ctx: CanvasRenderingContext2D) {
                 ctx.save();
                 ctx.translate(this.x, this.y);
-                ctx.scale(this.scale, this.scale);
+                ctx.scale(this.scale * 1.5, this.scale * 1.5); // Kicsit nagyobb méret a részletekért
                 ctx.rotate(Math.atan2(this.vy, this.vx) + Math.PI / 2);
                 ctx.globalAlpha = this.opacity;
                 ctx.strokeStyle = this.color;
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = 1;
 
-                // Típus-specifikus rajzolás (SVG Mester kódalapú vektorgrafika)
+                const time = Date.now() * 0.02; // Animációs időalap
+
+                // --- REALISZTIKUS LORICATUS FLOTTA (Pixel-Perfect Tech-Art) ---
                 switch (this.type) {
-                    case 0: // Quadcopter (X váz)
+                    case 0: // DJI MAVIC 3 — Sleek Consumer Drone
+                        // Karok (Folded-look arms)
                         ctx.beginPath();
-                        ctx.moveTo(-10, -10); ctx.lineTo(10, 10);
-                        ctx.moveTo(10, -10); ctx.lineTo(-10, 10);
+                        ctx.moveTo(-8, -10); ctx.lineTo(-4, -2);
+                        ctx.moveTo(8, -10); ctx.lineTo(4, -2);
+                        ctx.moveTo(-10, 8); ctx.lineTo(-4, 0);
+                        ctx.moveTo(10, 8); ctx.lineTo(4, 0);
+                        ctx.stroke();
+                        // Géptest
+                        ctx.strokeRect(-4, -6, 8, 12);
+                        // Kamera modul
+                        ctx.strokeRect(-2, -8, 4, 3);
+                        // Propellerek (forgó effekt)
+                        this.drawProp(ctx, -8, -10, time);
+                        this.drawProp(ctx, 8, -10, time);
+                        this.drawProp(ctx, -10, 8, time);
+                        this.drawProp(ctx, 10, 8, time);
+                        break;
+
+                    case 1: // DJI MATRICE 350 RTK — Heavy Industrial
+                        // Vastag váz
+                        ctx.strokeRect(-6, -8, 12, 16);
+                        // RTK modulok a sarkokon
+                        ctx.strokeRect(-8, -10, 4, 4);
+                        ctx.strokeRect(4, -10, 4, 4);
+                        // Hosszú motortartó karok
+                        ctx.beginPath();
+                        ctx.moveTo(-6, -6); ctx.lineTo(-15, -15);
+                        ctx.moveTo(6, -6); ctx.lineTo(15, -15);
+                        ctx.moveTo(-6, 6); ctx.lineTo(-15, 15);
+                        ctx.moveTo(6, 6); ctx.lineTo(15, 15);
+                        ctx.stroke();
+                        // Nagy propellerek
+                        this.drawProp(ctx, -15, -15, time * 0.8, 8);
+                        this.drawProp(ctx, 15, -15, time * 0.8, 8);
+                        this.drawProp(ctx, -15, 15, time * 0.8, 8);
+                        this.drawProp(ctx, 15, 15, time * 0.8, 8);
+                        break;
+
+                    case 2: // LEICA RTC360 SCANNERT — Vertical Precision
+                        ctx.rotate(-(Math.atan2(this.vy, this.vx) + Math.PI / 2)); // Fix állású marad
+                        // Test sziluett
+                        ctx.beginPath();
+                        ctx.moveTo(-6, 10); ctx.lineTo(-6, -6);
+                        ctx.lineTo(0, -12); ctx.lineTo(6, -6);
+                        ctx.lineTo(6, 10); ctx.closePath();
+                        ctx.stroke();
+                        // Forgó lézer egység középen
+                        ctx.beginPath();
+                        ctx.arc(0, -2, 4, 0, Math.PI * 2);
                         ctx.stroke();
                         ctx.beginPath();
-                        ctx.arc(-10, -10, 4, 0, Math.PI * 2);
-                        ctx.arc(10, -10, 4, 0, Math.PI * 2);
+                        ctx.moveTo(0, -2);
+                        ctx.lineTo(Math.cos(time * 0.5) * 4, -2 + Math.sin(time * 0.5) * 4);
                         ctx.stroke();
                         break;
-                    case 1: // Flying Wing (V alak)
+
+                    case 3: // DJI AVATA 2 — Cinewhoop
+                        // Propeller védő gyűrűk (Ducts)
                         ctx.beginPath();
-                        ctx.moveTo(0, -12); ctx.lineTo(-15, 8);
-                        ctx.lineTo(0, 2); ctx.lineTo(15, 8);
-                        ctx.closePath();
+                        ctx.arc(-8, -8, 7, 0, Math.PI * 2);
+                        ctx.arc(8, -8, 7, 0, Math.PI * 2);
+                        ctx.arc(-8, 8, 7, 0, Math.PI * 2);
+                        ctx.arc(8, 8, 7, 0, Math.PI * 2);
                         ctx.stroke();
-                        break;
-                    case 2: // Scanner (Kör + forgó fej)
+                        // X váz és test
                         ctx.beginPath();
-                        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                        ctx.moveTo(-8, -8); ctx.lineTo(8, 8);
+                        ctx.moveTo(8, -8); ctx.lineTo(-8, 8);
                         ctx.stroke();
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0); ctx.lineTo(0, -12);
-                        ctx.stroke();
-                        break;
-                    case 3: // Hexacopter (Csillag váz)
-                        for (let i = 0; i < 6; i++) {
-                            ctx.rotate(Math.PI / 3);
-                            ctx.beginPath();
-                            ctx.moveTo(0, 0); ctx.lineTo(0, -12);
-                            ctx.stroke();
-                        }
+                        ctx.strokeRect(-3, -5, 6, 10);
+                        // Kamera
+                        ctx.beginPath(); ctx.arc(0, -6, 2, 0, Math.PI * 2); ctx.stroke();
+                        // Gyors forgású belső propellerek
+                        this.drawProp(ctx, -8, -8, time * 2, 5);
+                        this.drawProp(ctx, 8, -8, time * 2, 5);
+                        this.drawProp(ctx, -8, 8, time * 2, 5);
+                        this.drawProp(ctx, 8, 8, time * 2, 5);
                         break;
                 }
 
-                // Központi "szenzor" pont
+                // Központi neon szenzor
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(0, 0, 2, 0, Math.PI * 2);
+                ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.restore();
+            }
+
+            // Segédmetódus a forgó propeller rajzolásához
+            drawProp(ctx: CanvasRenderingContext2D, x: number, y: number, t: number, r: number = 5) {
+                ctx.beginPath();
+                ctx.moveTo(x + Math.cos(t) * r, y + Math.sin(t) * r);
+                ctx.lineTo(x - Math.cos(t) * r, y - Math.sin(t) * r);
+                ctx.stroke();
             }
         }
 
