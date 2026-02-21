@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { HouseRulesPanel } from './HouseRulesPanel';
 
 interface PlayerConfig {
@@ -20,6 +20,8 @@ interface PlayerSetupProps {
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
     const [playerCount, setPlayerCount] = useState(2);
+    const [showBotHint, setShowBotHint] = useState(true);
+    const [hoveredBotBtn, setHoveredBotBtn] = useState<number | null>(null);
     const [players, setPlayers] = useState<PlayerConfig[]>([
         { id: 'p1', name: 'Játékos 1', color: PLAYER_COLORS[0], token: AVAILABLE_TOKENS[0], isBot: false },
         { id: 'p2', name: 'Játékos 2', color: PLAYER_COLORS[1], token: AVAILABLE_TOKENS[1], isBot: false },
@@ -78,6 +80,33 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                     </div>
                 </div>
 
+                {/* Bot Hint Banner */}
+                <AnimatePresence>
+                    {showBotHint && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -10, height: 0 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                            className="bot-hint-banner"
+                        >
+                            <div className="bot-hint-content">
+                                <span className="bot-hint-icon">🤖</span>
+                                <span className="bot-hint-text">
+                                    <strong>Tipp:</strong> Kattints a <span className="bot-hint-icon-inline">👤</span> ikonra bármelyik játékosnál a <strong>bot mód</strong> bekapcsolásához!
+                                </span>
+                            </div>
+                            <button
+                                className="bot-hint-close"
+                                onClick={() => setShowBotHint(false)}
+                                aria-label="Bezárás"
+                            >
+                                ✕
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Player Inputs */}
                 {Array.from({ length: playerCount }).map((_, i) => (
                     <motion.div
@@ -134,23 +163,45 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                         />
 
                         {/* Bot toggle (#73) */}
-                        <button
-                            onClick={() => updatePlayer(i, 'isBot', !players[i].isBot)}
-                            title={players[i].isBot ? 'AI bot — kattints az emberi játékoshoz' : 'Kattints a bot módhoz'}
-                            style={{
-                                background: players[i].isBot ? 'rgba(201,168,76,0.15)' : 'transparent',
-                                border: players[i].isBot ? '1px solid var(--gold)' : '1px solid var(--border)',
-                                borderRadius: '6px',
-                                padding: '0.3rem 0.4rem',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                color: players[i].isBot ? 'var(--gold-light)' : 'var(--text-secondary)',
-                                flexShrink: 0,
-                                transition: 'all 0.15s',
-                            }}
+                        <div className="bot-toggle-wrapper"
+                            onMouseEnter={() => setHoveredBotBtn(i)}
+                            onMouseLeave={() => setHoveredBotBtn(null)}
                         >
-                            {players[i].isBot ? '🤖' : '👤'}
-                        </button>
+                            <motion.button
+                                onClick={() => {
+                                    updatePlayer(i, 'isBot', !players[i].isBot);
+                                    if (!players[i].isBot) setShowBotHint(false);
+                                }}
+                                title={players[i].isBot ? 'AI bot — kattints az emberi játékoshoz' : 'Kattints a bot módhoz'}
+                                className={`bot-toggle-btn ${players[i].isBot ? 'bot-active' : ''} ${!players[i].isBot && showBotHint ? 'bot-toggle-pulse' : ''}`}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <motion.span
+                                    key={players[i].isBot ? 'bot' : 'human'}
+                                    initial={{ rotateY: 90, opacity: 0 }}
+                                    animate={{ rotateY: 0, opacity: 1 }}
+                                    transition={{ duration: 0.25 }}
+                                    style={{ display: 'inline-block' }}
+                                >
+                                    {players[i].isBot ? '🤖' : '👤'}
+                                </motion.span>
+                            </motion.button>
+
+                            {/* Tooltip */}
+                            <AnimatePresence>
+                                {hoveredBotBtn === i && (
+                                    <motion.div
+                                        className="bot-tooltip"
+                                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        {players[i].isBot ? 'Kattints az emberi módhoz' : 'Kattints a bot módhoz'}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         {/* Color indicator */}
                         <div style={{

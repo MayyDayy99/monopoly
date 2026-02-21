@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useGame } from '../engine/GameHooks';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUP_MONOGRAMS } from '../data/board';
 import type { BoardSpace as BoardSpaceType } from '../types';
 import { SpaceDetail } from './SpaceDetail';
 import { ControlPanel } from './ControlPanel';
+import { TokenLayer } from './tokens/TokenLayer';
 
 // Map space index → grid position (row, col) for 11x11 grid
 function getGridPosition(index: number): { row: number; col: number; edge: string } {
@@ -57,13 +57,14 @@ export function Board() {
                     const monogram = colorGroup ? COLOR_GROUP_MONOGRAMS[colorGroup] : undefined;
                     const owned = state.ownedProperties[space.id];
                     const ownerPlayer = owned ? state.players.find(p => p.id === owned.ownerId) : null;
-                    const playersHere = state.players.filter(p => p.position === space.id && !p.isBankrupt);
+                    // playersHere már nem kell a cellán belüli rendereléshez — a TokenLayer kezeli
                     const price = space.property?.price || space.railroad?.price || space.utility?.price;
                     const icon = getSpaceIcon(space);
 
                     return (
                         <div
                             key={space.id}
+                            data-space-id={space.id}
                             className={`board-space ${corner ? 'corner' : ''} edge-${edge}`}
                             style={{ gridRow: row, gridColumn: col }}
                             onClick={() => setSelectedSpace(space.id)}
@@ -124,26 +125,7 @@ export function Board() {
                                 <div className="owner-ring" style={{ borderColor: ownerPlayer.color }} />
                             )}
 
-                            {/* Player tokens — #42: Smooth movement with layout prop */}
-                            {playersHere.length > 0 && (
-                                <div
-                                    className="player-tokens"
-                                    style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}
-                                >
-                                    {playersHere.map(p => (
-                                        <motion.span
-                                            key={p.id}
-                                            layout
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                            className="player-token"
-                                            title={p.name}
-                                            style={{ display: 'inline-block', zIndex: 10 }}
-                                        >
-                                            {p.token}
-                                        </motion.span>
-                                    ))}
-                                </div>
-                            )}
+                            {/* Bábuk a TokenLayer overlay rétegben renderelődnek */}
                         </div>
                     );
                 })}
@@ -153,6 +135,9 @@ export function Board() {
                     <ControlPanel />
                 </div>
             </div>
+
+            {/* Overlay réteg: a bábuk itt renderelődnek, a tábla felett */}
+            <TokenLayer />
 
             {/* Space detail popup */}
             {selectedSpace !== null && (
