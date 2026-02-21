@@ -623,26 +623,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
   background: transparent;
+  overflow-x: hidden;
   overflow-y: auto;
-  /* Allow scrolling if card is too big */
 }
 
 .setup-card {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(199, 254, 27, 0.2);
-  border-radius: 24px;
-  padding: 2rem;
-  /* Reduced from 3rem */
-  max-width: 500px;
+  border-radius: 20px;
+  padding: 1.25rem;
+  max-width: 440px;
   width: 100%;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(199, 254, 27, 0.05);
   position: relative;
   z-index: 10;
   margin: auto;
-  /* Center in scrollable container */
+  overflow: hidden;
 }
 
 .setup-title {
@@ -664,8 +666,10 @@ body {
 .setup-subtitle {
   text-align: center;
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin-bottom: 2rem;
+  font-size: 0.75rem;
+  /* Smaller */
+  margin-bottom: 1rem;
+  /* Less space */
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.02em;
 }
