@@ -4,7 +4,7 @@ import type { ComponentType } from 'react';
 import type { TokenAnimState } from '../../types';
 import { MavicDroneToken } from './MavicDroneToken';
 import { MatriceDroneToken } from './MatriceDroneToken';
-import { LeicaScannerToken } from './LeicaScannerToken';
+import { DJIMatrice30Token } from './DJIMatrice30Token';
 import { DJIAvataToken } from './DJIAvataToken';
 
 /** Egységes prop interfész minden token komponenshez */
@@ -51,10 +51,10 @@ export const TOKEN_REGISTRY: TokenDefinition[] = [
         component: MatriceDroneToken,
     },
     {
-        id: 'leica',
-        name: 'Leica RTC360',
+        id: 'm30',
+        name: 'DJI Matrice 30T',
         emoji: '🔭',
-        component: LeicaScannerToken,
+        component: DJIMatrice30Token,
     },
     {
         id: 'avata',
