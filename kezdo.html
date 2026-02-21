@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Komplex Magyar Monopoly</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #d1e8d5; margin: 0; padding: 20px; display: flex; gap: 20px; justify-content: center; }
+        
+        /* A játéktábla */
+        #board {
+            display: grid;
+            grid-template-columns: repeat(11, 70px);
+            grid-template-rows: repeat(11, 70px);
+            gap: 2px; background-color: #000; border: 4px solid #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .space {
+            background-color: #cde6d0; display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between; text-align: center;
+            font-size: 10px; position: relative; padding-bottom: 5px; box-sizing: border-box;
+        }
+
+        .corner { background-color: #e0e0e0; font-weight: bold; font-size: 12px; justify-content: center; }
+        
+        /* Ingatlan színek */
+        .color-bar { width: 100%; height: 15px; border-bottom: 1px solid #000; }
+        .name { padding: 2px; font-weight: bold; line-height: 1.1; }
+        .price { font-size: 9px; color: #333; }
+        
+        /* Bábuk */
+        .token-container { display: flex; gap: 2px; position: absolute; bottom: 2px; }
+        .token { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; }
+        
+        /* Vezérlőpult a tábla közepén */
+        #center-area {
+            grid-column: 2 / 11; grid-row: 2 / 11; background-color: #d1e8d5;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        #panel {
+            background: white; padding: 20px; border-radius: 10px; width: 350px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px dashed #4CAF50;
+        }
+
+        h1 { margin: 0 0 10px 0; color: #d32f2f; text-transform: uppercase; text-align: center; }
+        .stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; font-size: 16px; }
+        
+        button {
+            width: 100%; padding: 12px; font-size: 16px; color: white; border: none;
+            cursor: pointer; border-radius: 5px; font-weight: bold; margin-bottom: 10px;
+        }
+        #roll-btn { background-color: #2196F3; } #roll-btn:hover { background-color: #1976D2; }
+        #buy-btn { background-color: #4CAF50; display: none; } #buy-btn:hover { background-color: #388E3C; }
+        #pass-btn { background-color: #f44336; display: none; } #pass-btn:hover { background-color: #d32f2f; }
+        
+        #log { height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; font-size: 13px; margin-top: 10px; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+    <div id="board">
+        <div id="center-area">
+            <div id="panel">
+                <h1>Monopoly</h1>
+                <div class="stats">
+                    <span id="p1-money" style="color: red;">P1: 1500k</span>
+                    <span id="p2-money" style="color: blue;">P2: 1500k</span>
+                </div>
+                <h3 id="turn-indicator" style="text-align: center; margin: 5px 0;">Játékos 1 (Piros) köre</h3>
+                
+                <button id="roll-btn" onclick="takeTurn()">Kockadobás</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="buy-btn" onclick="buyProperty()">Megveszem!</button>
+                    <button id="pass-btn" onclick="endTurn()">Kihagyom</button>
+                </div>
+                
+                <div id="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. A 40 mező komplex adatbázisa (Név, Típus, Szín, Ár, Alap bérleti díj)
+        const spaces = [
+            { name: "START", type: "go" },
+            { name: "Soroksári út", type: "prop", color: "#8B4513", price: 60, rent: 2 },
+            { name: "Közösségi Alap", type: "chest" },
+            { name: "Kelenföldi út", type: "prop", color: "#8B4513", price: 60, rent: 4 },
+            { name: "Jövedelemadó", type: "tax", price: 200 },
+            { name: "Keleti pu.", type: "station", price: 200, rent: 25 },
+            { name: "Váci út", type: "prop", color: "#87CEEB", price: 100, rent: 6 },
+            { name: "Esély", type: "chance" },
+            { name: "Bécsi út", type: "prop", color: "#87CEEB", price: 100, rent: 6 },
+            { name: "Vörösvári út", type: "prop", color: "#87CEEB", price: 120, rent: 8 },
+            { name: "Börtön", type: "jail" },
+            { name: "Erzsébet krt.", type: "prop", color: "#FF69B4", price: 140, rent: 10 },
+            { name: "Elektromos Művek", type: "utility", price: 150 },
+            { name: "Teréz krt.", type: "prop", color: "#FF69B4", price: 140, rent: 10 },
+            { name: "Nagykörút", type: "prop", color: "#FF69B4", price: 160, rent: 12 },
+            { name: "Nyugati pu.", type: "station", price: 200, rent: 25 },
+            { name: "Rákóczi út", type: "prop", color: "#FFA500", price: 180, rent: 14 },
+            { name: "Közösségi Alap", type: "chest" },
+            { name: "Üllői út", type: "prop", color: "#FFA500", price: 180, rent: 14 },
+            { name: "Váci utca", type: "prop", color: "#FFA500", price: 200, rent: 16 },
+            { name: "Ingyenes Parkoló", type: "parking" },
+            { name: "Múzeum krt.", type: "prop", color: "#FF0000", price: 220, rent: 18 },
+            { name: "Esély", type: "chance" },
+            { name: "Károly krt.", type: "prop", color: "#FF0000", price: 220, rent: 18 },
+            { name: "Kossuth L. u.", type: "prop", color: "#FF0000", price: 240, rent: 20 },
+            { name: "Déli pu.", type: "station", price: 200, rent: 25 },
+            { name: "Thököly út", type: "prop", color: "#FFFF00", price: 260, rent: 22 },
+            { name: "Rákóczi tér", type: "prop", color: "#FFFF00", price: 260, rent: 22 },
+            { name: "Vízművek", type: "utility", price: 150 },
+            { name: "Bartók B. út", type: "prop", color: "#FFFF00", price: 280, rent: 24 },
+            { name: "Irány a Börtönbe!", type: "gotojail" },
+            { name: "Margitsziget", type: "prop", color: "#008000", price: 300, rent: 26 },
+            { name: "Gellérthegy", type: "prop", color: "#008000", price: 300, rent: 26 },
+            { name: "Közösségi Alap", type: "chest" },
+            { name: "Széchenyi hegy", type: "prop", color: "#008000", price: 320, rent: 28 },
+            { name: "Józsefvárosi", type: "station", price: 200, rent: 25 },
+            { name: "Esély", type: "chance" },
+            { name: "Dunakorzó", type: "prop", color: "#0000CD", price: 350, rent: 35 },
+            { name: "Luxusadó", type: "tax", price: 100 },
+            { name: "Vörösmarty tér", type: "prop", color: "#0000CD", price: 400, rent: 50 }
+        ];
+
+        // 2. Játék Állapot
+        const players = [
+            { id: 1, name: "P1", money: 1500, pos: 0, color: "red" },
+            { id: 2, name: "P2", money: 1500, pos: 0, color: "blue" }
+        ];
+        let turnIndex = 0;
+        let activeProperty = null;
+
+        // 3. Pálya legenerálása a 11x11 háló szélére
+        function initBoard() {
+            const board = document.getElementById('board');
+            const posMap = [];
+            
+            // Felső sor (20-30)
+            for(let i=20; i<=30; i++) posMap.push({ id: i, row: 1, col: i-19 });
+            // Jobb oszlop (31-39)
+            for(let i=31; i<=39; i++) posMap.push({ id: i, row: i-29, col: 11 });
+            // Alsó sor (10-0 visszafelé)
+            for(let i=10; i>=0; i--) posMap.push({ id: i, row: 11, col: i+1 });
+            // Bal oszlop (19-11 visszafelé)
+            for(let i=19; i>=11; i--) posMap.push({ id: i, row: 21-i, col: 1 });
+
+            posMap.sort((a,b) => a.id - b.id).forEach(pos => {
+                const space = spaces[pos.id];
+                const div = document.createElement('div');
+                div.className = 'space';
+                if(pos.id % 10 === 0) div.classList.add('corner');
+                div.style.gridRow = pos.row;
+                div.style.gridColumn = pos.col;
+                div.id = `space-${pos.id}`;
+
+                let content = '';
+                if(space.color) content += `<div class="color-bar" style="background-color: ${space.color}"></div>`;
+                content += `<div class="name">${space.name}</div>`;
+                if(space.price) content += `<div class="price">${space.price}k</div>`;
+                content += `<div class="token-container" id="tokens-${pos.id}"></div>`;
+                
+                div.innerHTML = content;
+                board.appendChild(div);
+            });
+            updateTokens();
+        }
+
+        function log(msg) {
+            const l = document.getElementById('log');
+            l.innerHTML = `<div class="log-entry">${msg}</div>` + l.innerHTML;
+        }
+
+        function updateUI() {
+            document.getElementById('p1-money').innerText = `P1: ${players[0].money}k`;
+            document.getElementById('p2-money').innerText = `P2: ${players[1].money}k`;
+            const cp = players[turnIndex];
+            document.getElementById('turn-indicator').innerText = `Játékos ${cp.id} (${cp.color === 'red' ? 'Piros' : 'Kék'}) köre`;
+            document.getElementById('turn-indicator').style.color = cp.color;
+        }
+
+        function updateTokens() {
+            document.querySelectorAll('.token').forEach(e => e.remove());
+            players.forEach(p => {
+                const container = document.getElementById(`tokens-${p.pos}`);
+                if(container) container.innerHTML += `<div class="token" style="background-color: ${p.color};"></div>`;
+            });
+        }
+
+        // 4. Játékmenet Logika
+        function takeTurn() {
+            const player = players[turnIndex];
+            document.getElementById('roll-btn').style.display = 'none';
+            
+            const roll1 = Math.floor(Math.random() * 6) + 1;
+            const roll2 = Math.floor(Math.random() * 6) + 1;
+            log(`<strong>Játékos ${player.id}</strong> dobott: ${roll1} + ${roll2} = ${roll1+roll2}`);
+
+            const oldPos = player.pos;
+            player.pos = (player.pos + roll1 + roll2) % 40;
+            
+            if(player.pos < oldPos) {
+                player.money += 200;
+                log(`Áthaladt a START-on. +200k`);
+            }
+            
+            updateTokens();
+            handleSpace(player, spaces[player.pos]);
+        }
+
+        function handleSpace(player, space) {
+            log(`Rálépett: <strong>${space.name}</strong>`);
+            
+            if ((space.type === 'prop' || space.type === 'station' || space.type === 'utility') && !space.owner) {
+                if (player.money >= space.price) {
+                    activeProperty = space;
+                    document.getElementById('buy-btn').style.display = 'block';
+                    document.getElementById('pass-btn').style.display = 'block';
+                    document.getElementById('buy-btn').innerText = `Megveszem (${space.price}k)`;
+                    return; // Várakozás a gombnyomásra
+                } else {
+                    log(`Nincs elég pénz megvenni.`);
+                }
+            } else if (space.owner && space.owner !== player) {
+                log(`Fizet bérleti díjat Játékos ${space.owner.id}-nak: -${space.rent}k`);
+                player.money -= space.rent;
+                space.owner.money += space.rent;
+            } else if (space.type === 'tax') {
+                log(`Adófizetés: -${space.price}k`);
+                player.money -= space.price;
+            } else if (space.type === 'gotojail') {
+                log(`Irány a börtön!`);
+                player.pos = 10;
+                updateTokens();
+            }
+            
+            endTurn();
+        }
+
+        function buyProperty() {
+            const player = players[turnIndex];
+            player.money -= activeProperty.price;
+            activeProperty.owner = player;
+            log(`<span style="color: green;">Sikeres vásárlás!</span>`);
+            
+            // Szín megjelölése a táblán
+            document.getElementById(`space-${player.pos}`).style.borderBottom = `4px solid ${player.color}`;
+            endTurn();
+        }
+
+        function endTurn() {
+            activeProperty = null;
+            document.getElementById('buy-btn').style.display = 'none';
+            document.getElementById('pass-btn').style.display = 'none';
+            document.getElementById('roll-btn').style.display = 'block';
+            
+            updateUI();
+            turnIndex = (turnIndex + 1) % players.length;
+            updateUI();
+        }
+
+        initBoard();
+        log("A játék elindult!");
+    </script>
+</body>
+</html>
