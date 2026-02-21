@@ -4,5 +4,5 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/monopoly/', // GitHub Pages Subdomain /monopoly/ almappához
+  base: './', // Relatív útvonalak a GitHub Pages-hez a jobb kompatibilitás érdekében
 })
