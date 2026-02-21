@@ -114,6 +114,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 <div className="setup-players-list" style={{
                     maxHeight: '38vh',
                     overflowY: 'auto',
+                    overflowX: 'hidden', // Prevent horizontal scroll from tooltips
                     paddingRight: '0.5rem',
                     marginBottom: '1rem'
                 }}>
