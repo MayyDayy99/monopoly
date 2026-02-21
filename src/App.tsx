@@ -220,11 +220,22 @@ export default function App() {
   return (
     <ErrorBoundary>
       <GameProvider>
-        <ResumeBar />
-        <OrientationOverlay />
-        <GameContent />
+        <GameWrapper />
       </GameProvider>
     </ErrorBoundary>
+  );
+}
+
+function GameWrapper() {
+  const { state } = useGame();
+  const gameStarted = state.phase !== 'setup';
+
+  return (
+    <>
+      <ResumeBar />
+      <OrientationOverlay gameStarted={gameStarted} />
+      <GameContent />
+    </>
   );
 }
 

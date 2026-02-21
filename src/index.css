@@ -688,6 +688,55 @@ body {
   overflow: hidden;
 }
 
+@media (max-width: 480px) {
+  .setup-card {
+    padding: 0.75rem;
+    max-height: 98vh;
+    border-radius: 12px;
+  }
+
+  .setup-title {
+    font-size: 1.4rem;
+  }
+
+  .setup-subtitle {
+    font-size: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .setup-players-list {
+    max-height: 45vh !important;
+  }
+
+  .setup-players-list>div {
+    padding: 0.35rem !important;
+    gap: 0.35rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .setup-players-list select {
+    width: 65px !important;
+    padding: 0.3rem 0.2rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  .setup-players-list input {
+    padding: 0.45rem 0.6rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .bot-toggle-btn {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .btn-primary {
+    padding: 0.7rem !important;
+    font-size: 1rem !important;
+  }
+}
+
 .setup-title {
   font-family: 'Orbitron', 'Inter', sans-serif;
   font-weight: 900;
@@ -1695,5 +1744,162 @@ body {
   .sidebar-card h3 {
     font-size: 0.7rem !important;
     margin-bottom: 0.5rem !important;
+  }
+}
+
+/* ============================================================
+   MOBILE LANDSCAPE OPTIMIZATION (max-height: 500px)
+   Agresszív betűméret- és UI-csökkentés fekvő nézethez
+   ============================================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+  html {
+    font-size: 11px !important;
+  }
+
+  /* Elrendezés: Hud marad balra, tábla jobbra, de keskenyebben */
+  .game-layout {
+    flex-direction: row !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    gap: 0.5rem !important;
+    padding: 2px !important;
+  }
+
+  .loricatus-hud {
+    width: 200px !important;
+    min-width: 200px !important;
+    padding: 0.4rem !important;
+    border-right: 1px solid var(--border-active) !important;
+    border-top: none !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+  }
+
+  .game-board-section {
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+  }
+
+  .board-grid {
+    height: 96vh !important;
+    width: 96vh !important;
+    /* Négyzetes marad a magassághoz mérten */
+    margin: 0 auto !important;
+    border-width: 1px !important;
+  }
+
+  /* Betűméretek a táblán - vh-alapú scaling */
+  .board-space .space-name {
+    font-size: 1.6vh !important;
+    line-height: 1 !important;
+  }
+
+  .board-space .space-price {
+    font-size: 1.4vh !important;
+  }
+
+  .board-space.corner .space-name {
+    font-size: 1.9vh !important;
+  }
+
+  /* HUD elemek kicsinyítése */
+  .hud-player-name {
+    font-size: 0.8rem !important;
+  }
+
+  .hud-balance-value {
+    font-size: 0.9rem !important;
+  }
+
+  .hud-token-container {
+    width: 50px !important;
+    height: 50px !important;
+    padding: 0.2rem !important;
+  }
+
+  .hud-token-container svg {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .hud-token-name {
+    display: none !important;
+  }
+
+  .hud-player-info {
+    gap: 0 !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  /* Logók elrejtése vagy drasztikus kicsinyítése */
+  .loricatus-hud img[alt="Loricatus Logo"],
+  .board-center img {
+    width: 24px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Címek a HUD-ban */
+  .loricatus-hud div[style*="fontFamily: Orbitron"] {
+    font-size: 0.5rem !important;
+    margin-top: 0.2rem !important;
+  }
+
+  .loricatus-hud div[style*="fontFamily: 'JetBrains Mono'"] {
+    font-size: 0.4rem !important;
+  }
+
+  /* Tábla közepén lévő szövegek */
+  .board-center div[style*="fontFamily"] {
+    font-size: 0.7rem !important;
+  }
+
+  .board-center div[style*="font-size: 0.65rem"] {
+    font-size: 0.5rem !important;
+  }
+
+  /* Sidebar kártyák (Napló, Stat) */
+  .sidebar-card {
+    padding: 0.4rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .sidebar-card h3 {
+    font-size: 0.6rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  .event-log {
+    height: 80px !important;
+    min-height: 60px !important;
+  }
+
+  .log-entry {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.3rem !important;
+  }
+
+  .player-stat-row {
+    padding: 0.2rem !important;
+    margin-bottom: 0.2rem !important;
+    gap: 0.3rem !important;
+  }
+
+  /* Vezérlőgombok */
+  .control-panel {
+    gap: 0.25rem !important;
+  }
+
+  .control-panel button {
+    padding: 3px 6px !important;
+    font-size: 0.65rem !important;
+    min-height: 24px !important;
+  }
+
+  .dice-container {
+    margin-bottom: 0 !important;
+    gap: 0.15rem !important;
   }
 }

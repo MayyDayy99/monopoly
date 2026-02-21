@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/**
- * A Loricatus HQ-ból származó tájékoztató overlay, 
- * amely kéri a felhasználót, hogy fordítsa el az eszközt.
- */
-export function OrientationOverlay() {
+export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
     const [isPortrait, setIsPortrait] = useState(false);
 
     useEffect(() => {
@@ -22,7 +18,7 @@ export function OrientationOverlay() {
 
     return (
         <AnimatePresence>
-            {isPortrait && (
+            {isPortrait && gameStarted && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
