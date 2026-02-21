@@ -5,6 +5,7 @@ import type { BoardSpace as BoardSpaceType } from '../types';
 import { SpaceDetail } from './SpaceDetail';
 import { ControlPanel } from './ControlPanel';
 import { TokenLayer } from './tokens/TokenLayer';
+import logoKicsi from '../assets/logo_kicsi.png';
 
 // Map space index → grid position (row, col) for 11x11 grid
 function getGridPosition(index: number): { row: number; col: number; edge: string } {
@@ -96,10 +97,10 @@ export function Board() {
                         <div className="radar-crosshair radar-crosshair-v" />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '1.5rem 0' }}>
-                        <div style={{ textAlign: 'center', width: '80%' }}>
-                            <img src="./assets/Logo_2B3B46.png" alt="Loricatus Banner" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 0 15px var(--neon-glow))', marginBottom: '0.2rem' }} />
-                            <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 400, fontSize: '0.55rem', color: 'var(--text-secondary)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
-                                Magyar Műemlékek • 3D Digitalizáció
+                        <div style={{ textAlign: 'center', width: '80%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
+                            <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '60px', height: 'auto', filter: 'drop-shadow(0 0 15px var(--neon-glow))' }} />
+                            <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: 'var(--neon)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                Monopoly by Loricatus
                             </div>
                         </div>
                         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>

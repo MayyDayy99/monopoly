@@ -6,6 +6,7 @@
 import { useGame, useTokenAnimReset } from '../engine/GameHooks';
 import { getTokenByEmoji } from './tokens/TokenRegistry';
 import { TurnTimer } from './TurnTimer';
+import logoKicsi from '../assets/logo_kicsi.png';
 
 export function LoricatusHUD() {
     const { state } = useGame();
@@ -23,7 +24,7 @@ export function LoricatusHUD() {
         <div className="hud-current-player">
             {/* ── Logo ── */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', opacity: 0.8 }}>
-                <img src="/assets/logo_kicsi.png" alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
+                <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
             </div>
 
             {/* ── Nagy token konténer ── */}

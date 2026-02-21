@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HouseRulesPanel } from './HouseRulesPanel';
 import { TOKEN_REGISTRY } from './tokens/TokenRegistry';
 import { LoricatusBackground } from './LoricatusBackground';
+import logoKicsi from '../assets/logo_kicsi.png';
 
 interface PlayerConfig {
     id: string;
@@ -55,7 +56,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
             >
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-                    <img src="/assets/logo_kicsi.png" alt="Loricatus Logo" style={{ width: '80px', height: 'auto' }} />
+                    <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '80px', height: 'auto' }} />
                 </div>
                 <h1 className="setup-title">Monopoly by Loricatus</h1>
 
