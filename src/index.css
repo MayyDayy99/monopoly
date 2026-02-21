@@ -1429,3 +1429,230 @@ body {
 .relative {
   position: relative;
 }
+
+/* ============================================================
+   LORICATUS PRIME ARCHITECT — MOBILE OPTIMIZATION (#93-97)
+   BREAKPOINT: 900px — Szigorú reszponzivitás és HUD-átalakítás
+   ============================================================ */
+@media (max-width: 900px) {
+
+  /* --- 1. FÁZIS: OSZLOPOS ELRENDEZÉS (Stacking Layout) --- */
+  .game-layout {
+    flex-direction: column-reverse !important;
+    /* Tábla felül, HUD alul */
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+    display: flex !important;
+    gap: 0 !important;
+  }
+
+  body {
+    overflow: auto !important;
+    background-attachment: fixed;
+  }
+
+  /* --- 2. FÁZIS: A TÁBLA SKÁLÁZÁSA (Fluid Board Dimensions) --- */
+  .game-board-section {
+    width: 100vw !important;
+    height: auto !important;
+    padding: 10px 0 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    overflow: visible !important;
+  }
+
+  .board-grid {
+    width: 95vw !important;
+    height: 95vw !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-width: 2px !important;
+  }
+
+  /* Mezők belső skálázása dinamikus viewport egységekkel */
+  .board-space .space-name {
+    font-size: 1.8vw !important;
+    padding: 0 1px !important;
+    line-height: 1.1 !important;
+  }
+
+  .board-space .space-price {
+    font-size: 1.5vw !important;
+    margin-top: 1px !important;
+  }
+
+  .board-space.corner .space-name {
+    font-size: 2.1vw !important;
+  }
+
+  .board-space .color-bar {
+    height: 25% !important;
+  }
+
+  /* Bábuk (Tokens) mérete mobilon */
+  .token-container {
+    scale: 0.85 !important;
+  }
+
+  /* --- 3. FÁZIS: A KÖZÉPSŐ UI ZSUGORÍTÁSA (Center Panel Fix) --- */
+  .board-center {
+    padding: 0.4rem !important;
+  }
+
+  /* LiDAR Radar effekt zsugorítása */
+  .radar-hud {
+    width: 85% !important;
+    height: 85% !important;
+  }
+
+  /* Dobókockák (Die) skálázása */
+  .die {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 4px !important;
+  }
+
+  .die-dot {
+    width: 3px !important;
+    height: 3px !important;
+  }
+
+  .dice-container {
+    gap: 8px !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  /* Akció gombok gyorstárcsázó stílusban */
+  .control-panel button,
+  .btn-primary,
+  .btn-secondary {
+    width: 90% !important;
+    padding: 6px 10px !important;
+    font-size: 0.7rem !important;
+    margin: 3px auto !important;
+    min-height: 28px !important;
+  }
+
+  /* Logo és cím a tábla közepén */
+  .board-center img {
+    width: 40px !important;
+    margin-bottom: 0.1rem !important;
+  }
+
+  .board-center div[style*="fontFamily"] {
+    font-size: 0.8rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* --- 4. FÁZIS: A HUD PANEL ÁTALAKÍTÁSA (Bottom Bar) --- */
+  .loricatus-hud {
+    display: flex !important;
+    /* Felülbíráljuk a korábbi display: none-t */
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    border-right: none !important;
+    border-top: 2px solid var(--border-active) !important;
+    padding: 1rem !important;
+    background: var(--bg-surface) !important;
+    position: relative !important;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .hud-current-player {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+
+  /* Bal oldali logó elrejtése mobilon a helytakarékosság végett */
+  .hud-current-player>div:first-child {
+    display: none !important;
+  }
+
+  /* Hatalmas SVG konténer kicsinyítése (80x80px) */
+  .hud-token-container {
+    width: 80px !important;
+    height: 80px !important;
+    padding: 0.4rem !important;
+    margin: 0 !important;
+    flex-shrink: 0;
+    border-radius: 12px !important;
+  }
+
+  .hud-token-container svg {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .hud-token-name {
+    display: none !important;
+  }
+
+  /* Játékos statisztikák (Név, Egyenleg, TurnTimer) */
+  .hud-player-info {
+    flex: 1;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .hud-player-name {
+    font-size: 1rem !important;
+    margin: 0 !important;
+  }
+
+  .hud-player-balance {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+    gap: 0.5rem;
+  }
+
+  .hud-balance-value {
+    font-size: 1.1rem !important;
+  }
+
+  .hud-player-props {
+    font-size: 0.7rem !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 0.8;
+  }
+
+  /* Állapotjelző dot elrejtése a kompaktságért */
+  .hud-state-indicator {
+    display: none !important;
+  }
+
+  /* A görgethető HUD tartalom (Napló, Ingatlanlista) */
+  .hud-scroll-content {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .sidebar-card {
+    padding: 0.75rem !important;
+    border-radius: 10px !important;
+  }
+
+  .sidebar-card h3 {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
