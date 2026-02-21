@@ -581,6 +581,47 @@ body {
   box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
 }
 
+.fullscreen-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  padding: 6px;
+}
+
+.fullscreen-btn:hover {
+  border-color: var(--neon);
+  color: var(--neon);
+  background: var(--neon-subtle);
+  box-shadow: 0 0 15px var(--neon-glow);
+  transform: scale(1.1);
+}
+
+.fullscreen-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .fullscreen-btn {
+    top: 5px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* ============================================================
    DICE
    ============================================================ */

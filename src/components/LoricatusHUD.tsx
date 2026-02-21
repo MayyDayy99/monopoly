@@ -22,19 +22,37 @@ export function LoricatusHUD() {
 
     return (
         <div className="hud-current-player">
-            {/* ── Logo ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem', opacity: 0.8 }}>
-                <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
-                <div style={{
-                    fontFamily: 'Orbitron, sans-serif',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    marginTop: '0.4rem',
-                    color: 'var(--neon)',
-                    textTransform: 'uppercase'
-                }}>
-                    Monopoly by Loricatus
+            {/* ── Logo & Fullscreen ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem', position: 'relative' }}>
+                <button
+                    onClick={() => {
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen().catch(e => console.error(e));
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    }}
+                    className="fullscreen-btn"
+                    title="Teljes képernyő"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                    </svg>
+                </button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.8 }}>
+                    <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
+                    <div style={{
+                        fontFamily: 'Orbitron, sans-serif',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        marginTop: '0.4rem',
+                        color: 'var(--neon)',
+                        textTransform: 'uppercase'
+                    }}>
+                        Monopoly by Loricatus
+                    </div>
                 </div>
             </div>
 

@@ -13,6 +13,7 @@ import { TradeResponseModal } from './components/TradeModal';
 import { HouseRulesPanel } from './components/HouseRulesPanel';
 import { LoricatusHUD } from './components/LoricatusHUD';
 import { EventLog } from './components/EventLog';
+import { OrientationOverlay } from './components/OrientationOverlay';
 import { useBotPlayer } from './engine/useBotPlayer';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
@@ -220,6 +221,7 @@ export default function App() {
     <ErrorBoundary>
       <GameProvider>
         <ResumeBar />
+        <OrientationOverlay />
         <GameContent />
       </GameProvider>
     </ErrorBoundary>
