@@ -1,6 +1,9 @@
 // ============================================================
-// MONOPOLY GAME — TYPE DEFINITIONS
+// LORICATUS-OPOLY — TYPE DEFINITIONS
 // ============================================================
+
+// ---- Token Animation State ----
+export type TokenAnimState = 'IDLE' | 'MOVING' | 'ACTION';
 
 // ---- Color Groups ----
 export type ColorGroup =
@@ -189,6 +192,10 @@ export interface GameState {
     houseRules: HouseRules;        // P2: házi szabályok (#93-97)
     turnTimer: number | null;      // P2: köridő (mpillás vege timestamp) (#67)
     freeParkingPool: number;       // P2: ingyenes parkoló jackpot (#93)
+    tokenAnimState: TokenAnimState; // Állapotalapú animáció (IDLE/MOVING/ACTION)
+    // --- Új mezők a szekvenciális mozgáshoz (AAA PhysX) ---
+    totalStepsPending: number;
+    targetPosition: number | null;
 }
 
 // ---- Actions ----
@@ -216,4 +223,7 @@ export type GameAction =
     | { type: 'REJECT_TRADE' }
     | { type: 'CANCEL_TRADE' }
     | { type: 'SET_HOUSE_RULES'; rules: HouseRules }  // P2: házi szabályok
-    | { type: 'ADD_LOG'; entry: Omit<LogEntry, 'id' | 'timestamp'> };
+    | { type: 'ADD_LOG'; entry: Omit<LogEntry, 'id' | 'timestamp'> }
+    | { type: 'SET_TOKEN_ANIM'; animState: TokenAnimState }
+    | { type: 'MOVE_STEP' }
+    | { type: 'MOVE_TELEPORT'; position: number; passedGo?: boolean };

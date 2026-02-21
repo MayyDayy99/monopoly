@@ -1,10 +1,11 @@
-// ============================================================
-// TOKEN REGISTRY — Központi token térkép
-// A játékos által választható bábuk és azok React komponensei.
-// Jelenleg placeholder-ek, a végleges SVG-k ide kerülnek be.
+// A 4 Loricatus készülék: Mavic 3, Matrice 350, Leica RTC360, Avata 2
 // ============================================================
 import type { ComponentType } from 'react';
-import { PlaceholderToken } from './PlaceholderToken';
+import type { TokenAnimState } from '../../types';
+import { MavicDroneToken } from './MavicDroneToken';
+import { MatriceDroneToken } from './MatriceDroneToken';
+import { LeicaScannerToken } from './LeicaScannerToken';
+import { DJIAvataToken } from './DJIAvataToken';
 
 /** Egységes prop interfész minden token komponenshez */
 export interface TokenComponentProps {
@@ -16,6 +17,8 @@ export interface TokenComponentProps {
     isAnimating?: boolean;
     /** Játékos neve tooltip-hez */
     label?: string;
+    /** Állapotalapú animáció: IDLE / MOVING / ACTION */
+    tokenState?: TokenAnimState;
 }
 
 /** Regisztrált token definíció */
@@ -24,47 +27,45 @@ export interface TokenDefinition {
     id: string;
     /** Megjelenítendő név */
     name: string;
-    /** Emoji (visszafelé kompatibilitáshoz, pl. event log) */
+    /** Emoji (event log + fallback) */
     emoji: string;
     /** A React SVG komponens */
     component: ComponentType<TokenComponentProps>;
 }
 
 /**
- * Az elérhető bábuk regisztere.
- * A végleges fázisban ide kerülnek a DroneToken, ScannerToken, RobotDogToken.
- * Jelenleg mind PlaceholderToken-t használ, különböző alapszínekkel.
+ * A 4 Loricatus készülék regisztere.
+ * Minden token egy optimalizált SVG komponens beépített SMIL animációkkal.
  */
 export const TOKEN_REGISTRY: TokenDefinition[] = [
     {
-        id: 'drone',
-        name: 'Drón',
+        id: 'mavic',
+        name: 'DJI Mavic 3',
         emoji: '🛸',
-        component: PlaceholderToken, // TODO: DroneToken SVG (pörgő propeller)
+        component: MavicDroneToken,
     },
     {
-        id: 'scanner',
-        name: '3D Szkenner',
+        id: 'matrice',
+        name: 'DJI Matrice 350 RTK',
         emoji: '📡',
-        component: PlaceholderToken, // TODO: ScannerToken SVG (pásztázó lézer)
+        component: MatriceDroneToken,
     },
     {
-        id: 'robotdog',
-        name: 'Robotkutya',
-        emoji: '🐕',
-        component: PlaceholderToken, // TODO: RobotDogToken SVG (villogó LED)
-    },
-    {
-        id: 'theodolite',
-        name: 'Teodolit',
+        id: 'leica',
+        name: 'Leica RTC360',
         emoji: '🔭',
-        component: PlaceholderToken, // TODO: TheodoliteToken SVG
+        component: LeicaScannerToken,
+    },
+    {
+        id: 'avata',
+        name: 'DJI Avata 2',
+        emoji: '🎮',
+        component: DJIAvataToken,
     },
 ];
 
 /**
  * Token ID alapján visszaadja a token definíciót.
- * Ha nincs ilyen ID, visszaadja az elsőt (fallback).
  */
 export function getTokenById(id: string): TokenDefinition {
     return TOKEN_REGISTRY.find(t => t.id === id) || TOKEN_REGISTRY[0];
@@ -72,7 +73,6 @@ export function getTokenById(id: string): TokenDefinition {
 
 /**
  * Régi emoji string alapján visszaadja a legjobb illeszkedést.
- * Visszafelé kompatibilitáshoz (meglévő mentett játékok).
  */
 export function getTokenByEmoji(emoji: string): TokenDefinition {
     return TOKEN_REGISTRY.find(t => t.emoji === emoji) || TOKEN_REGISTRY[0];

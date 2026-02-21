@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGame } from '../engine/GameHooks';
+import { useGame, useAsyncMovement } from '../engine/GameHooks';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUP_MONOGRAMS } from '../data/board';
 import type { BoardSpace as BoardSpaceType } from '../types';
 import { SpaceDetail } from './SpaceDetail';
@@ -8,39 +8,30 @@ import { TokenLayer } from './tokens/TokenLayer';
 
 // Map space index → grid position (row, col) for 11x11 grid
 function getGridPosition(index: number): { row: number; col: number; edge: string } {
-    // Bottom row: 0-10 (row 11, col 11 down to 1)
-    if (index <= 10) {
-        return { row: 11, col: 11 - index, edge: 'bottom' };
-    }
-    // Left column: 11-19 (col 1, row 10 down to 2)
-    if (index <= 19) {
-        return { row: 10 - (index - 11), col: 1, edge: 'left' };
-    }
-    // Top row: 20-30 (row 1, col 1 to 11)
-    if (index <= 30) {
-        return { row: 1, col: index - 19, edge: 'top' };
-    }
-    // Right column: 31-39 (col 11, row 2 to 10)
+    if (index <= 10) return { row: 11, col: 11 - index, edge: 'bottom' };
+    if (index <= 19) return { row: 10 - (index - 11), col: 1, edge: 'left' };
+    if (index <= 30) return { row: 1, col: index - 19, edge: 'top' };
     return { row: index - 29, col: 11, edge: 'right' };
 }
 
 function getSpaceIcon(space: BoardSpaceType): string {
     switch (space.type) {
         case 'go': return '➡️';
-        case 'jail': return '🔒';
+        case 'jail': return '🚫';
         case 'free-parking': return '🅿️';
-        case 'go-to-jail': return '🚔';
+        case 'go-to-jail': return '🚁';
         case 'chance': return '❓';
         case 'community': return '🏛️';
-        case 'railroad': return '🚂';
-        case 'utility': return space.name.includes('Elektromos') ? '⚡' : '💧';
-        case 'tax': return '💰';
+        case 'railroad': return '📡';
+        case 'utility': return space.name.includes('Műhold') ? '🛰️' : '🖥️';
+        case 'tax': return '💳';
         default: return '';
     }
 }
 
 export function Board() {
     const { state } = useGame();
+    useAsyncMovement(); // AAA Sequential Movement
     const [selectedSpace, setSelectedSpace] = useState<number | null>(null);
 
     const isCorner = (id: number) => [0, 10, 20, 30].includes(id);
@@ -48,7 +39,6 @@ export function Board() {
     return (
         <div className="relative">
             <div className="board-grid">
-                {/* Render 40 board spaces */}
                 {BOARD_SPACES.map((space) => {
                     const { row, col, edge } = getGridPosition(space.id);
                     const corner = isCorner(space.id);
@@ -57,7 +47,6 @@ export function Board() {
                     const monogram = colorGroup ? COLOR_GROUP_MONOGRAMS[colorGroup] : undefined;
                     const owned = state.ownedProperties[space.id];
                     const ownerPlayer = owned ? state.players.find(p => p.id === owned.ownerId) : null;
-                    // playersHere már nem kell a cellán belüli rendereléshez — a TokenLayer kezeli
                     const price = space.property?.price || space.railroad?.price || space.utility?.price;
                     const icon = getSpaceIcon(space);
 
@@ -70,30 +59,12 @@ export function Board() {
                             onClick={() => setSelectedSpace(space.id)}
                             role="button"
                             tabIndex={0}
-                            aria-label={`${space.name}${price ? `, ára ${price}k` : ''}${ownerPlayer ? `, tulajdonosa ${ownerPlayer.name}` : ''}`}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    setSelectedSpace(space.id);
-                                }
-                            }}
                         >
-                            {/* Color bar for properties */}
                             {colorHex && (
-                                <div className="color-bar" style={{
-                                    background: colorHex,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.55rem',
-                                    fontWeight: 900,
-                                    color: 'rgba(255,255,255,0.8)',
-                                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                                }}>
+                                <div className="color-bar" style={{ background: colorHex }}>
                                     {state.houseRules?.colorblindMode && monogram}
                                 </div>
                             )}
-
-                            {/* Houses/Hotel indicator */}
                             {owned && (owned.houses > 0 || owned.hasHotel) && (
                                 <div className="houses-indicator">
                                     {owned.hasHotel ? (
@@ -105,41 +76,41 @@ export function Board() {
                                     )}
                                 </div>
                             )}
-
-                            {/* Mortgage overlay */}
-                            {owned?.isMortgaged && (
-                                <div className="mortgage-overlay">JLZ</div>
-                            )}
-
-                            {/* Space content */}
-                            {icon && !colorHex && (
-                                <span style={{ fontSize: corner ? '1.2rem' : '0.8rem', zIndex: 1 }}>{icon}</span>
-                            )}
+                            {owned?.isMortgaged && <div className="mortgage-overlay">JLZ</div>}
+                            {icon && !colorHex && <span style={{ fontSize: corner ? '1.2rem' : '0.8rem', zIndex: 1 }}>{icon}</span>}
                             <span className="space-name">{space.name}</span>
-                            {price && !owned && (
-                                <span className="space-price">{price}k</span>
-                            )}
-
-                            {/* Owner indicator */}
+                            {price && !owned && <span className="space-price">{price}k</span>}
                             {ownerPlayer && !owned?.isMortgaged && (
                                 <div className="owner-ring" style={{ borderColor: ownerPlayer.color }} />
                             )}
-
-                            {/* Bábuk a TokenLayer overlay rétegben renderelődnek */}
                         </div>
                     );
                 })}
 
-                {/* Center area — Control Panel */}
                 <div className="board-center">
-                    <ControlPanel />
+                    <div className="radar-hud">
+                        <div className="radar-circle radar-circle-1" />
+                        <div className="radar-circle radar-circle-2" />
+                        <div className="radar-circle radar-circle-3" />
+                        <div className="radar-crosshair" />
+                        <div className="radar-crosshair radar-crosshair-v" />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', padding: '1.5rem 0' }}>
+                        <div style={{ textAlign: 'center', width: '80%' }}>
+                            <img src="/Logo_2B3B46.png" alt="Loricatus Banner" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 0 15px var(--neon-glow))', marginBottom: '0.2rem' }} />
+                            <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 400, fontSize: '0.55rem', color: 'var(--text-secondary)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+                                Magyar Műemlékek • 3D Digitalizáció
+                            </div>
+                        </div>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                            <ControlPanel />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Overlay réteg: a bábuk itt renderelődnek, a tábla felett */}
             <TokenLayer />
 
-            {/* Space detail popup */}
             {selectedSpace !== null && (
                 <SpaceDetail spaceId={selectedSpace} onClose={() => setSelectedSpace(null)} />
             )}

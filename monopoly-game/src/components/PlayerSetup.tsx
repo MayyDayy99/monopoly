@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HouseRulesPanel } from './HouseRulesPanel';
+import { TOKEN_REGISTRY } from './tokens/TokenRegistry';
+import { LoricatusBackground } from './LoricatusBackground';
 
 interface PlayerConfig {
     id: string;
@@ -10,9 +12,9 @@ interface PlayerConfig {
     isBot: boolean;
 }
 
-const AVAILABLE_TOKENS = ['🎩', '🚗', '🐕', '👢', '🚂', '⛵', '🎯', '💎'];
-const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12'];
-const BOT_NAMES = ['Robi 🤖', 'HAL 🤖', 'GLaDOS 🤖', 'C-3PO 🤖'];
+const AVAILABLE_TOKENS = TOKEN_REGISTRY.map(t => t.emoji);
+const PLAYER_COLORS = ['#c7fe1b', '#0ea5e9', '#e879f9', '#fb923c'];
+const BOT_NAMES = ['Drón-AI 🤖', 'ScanBot 🤖', 'LiDAR-AI 🤖', 'AvataBot 🤖'];
 
 interface PlayerSetupProps {
     onStart: (players: PlayerConfig[]) => void;
@@ -45,14 +47,15 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
 
     return (
         <div className="setup-container">
+            <LoricatusBackground />
             <motion.div
                 className="setup-card"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-                <h1 className="setup-title">MONOPOLY</h1>
-                <p className="setup-subtitle">Budapest Edition • Magyar nyelvű társasjáték</p>
+                <h1 className="setup-title">LORICATUS-OPOLY</h1>
+                <p className="setup-subtitle">Magyar Műemlékek • 3D Digitalizáció • Tech-Noir</p>
 
                 {/* Player Count */}
                 <div style={{ marginBottom: '1.5rem' }}>
@@ -133,21 +136,21 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                                 background: 'var(--bg-card)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '6px',
-                                padding: '0.4rem',
-                                fontSize: '1.2rem',
+                                padding: '0.4rem 0.3rem',
+                                fontSize: '0.7rem',
                                 color: 'var(--text-primary)',
                                 cursor: 'pointer',
-                                width: '48px',
-                                textAlign: 'center',
+                                width: '80px',
+                                fontFamily: "'JetBrains Mono', monospace",
                             }}
                         >
-                            {AVAILABLE_TOKENS.map(t => (
+                            {TOKEN_REGISTRY.map(t => (
                                 <option
-                                    key={t}
-                                    value={t}
-                                    disabled={usedTokens.includes(t) && players[i].token !== t}
+                                    key={t.emoji}
+                                    value={t.emoji}
+                                    disabled={usedTokens.includes(t.emoji) && players[i].token !== t.emoji}
                                 >
-                                    {t}
+                                    {t.emoji} {t.name}
                                 </option>
                             ))}
                         </select>
@@ -244,7 +247,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                     marginTop: '1rem',
                     opacity: 0.6,
                 }}>
-                    Pass-and-play mód • Kezdőtőke: 1500k • 🤖 Bot mód elérhető
+                    Loricatus Group • Pass-and-play • Kezdőtőke: 1500k • 🤖 Bot mód
                 </p>
             </motion.div>
         </div>

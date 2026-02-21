@@ -1,95 +1,73 @@
 // ============================================================
-// TOKEN POSITIONING UTILITY — Fizikai motor a bábu pozicionáláshoz
-// Kiszámítja az X/Y pixel-koordinátákat a tábla overlay rétegéhez.
+// TOKEN POSITIONING UTILITY — Matematikai alapú pozicionálás
+// Kizárja a DOM-alapú query-ket (0,0 ugrás fix)
 // ============================================================
 
-/** Kiszámolt token pozíció */
 export interface TokenPosition {
-    x: number;
-    y: number;
+    x: number; // Százalékos koordináta (0-100)
+    y: number; // Százalékos koordináta (0-100)
 }
 
 /**
- * Kiszámítja egy bábu pontos pixel-pozícióját az overlay rétegen belül.
- *
- * @param spaceIndex - A célmező indexe (0-39)
- * @param playerIndex - A játékos sorszáma az adott mezőn (ütközéselkerüléshez)
- * @param totalPlayersOnSpace - Összes játékos száma az adott mezőn
- * @param boardEl - A tokens-layer (overlay) DOM elem referenciája
- * @returns Az X/Y koordináták az overlay rétegen belül, vagy null ha a DOM elem nem található
+ * Kiszámítja a mező rács-koordinátáit (1-11)
+ */
+export function getGridCoords(index: number): { row: number; col: number } {
+    if (index <= 10) return { row: 11, col: 11 - index };
+    if (index <= 19) return { row: 10 - (index - 11), col: 1 };
+    if (index <= 30) return { row: 1, col: index - 19 };
+    return { row: index - 29, col: 11 };
+}
+
+/**
+ * Százalékos pozíció számítása a tábla területén belül.
+ * Ez IMMUNIS a DOM renderelési késleltetésre.
  */
 export function calculateTokenPosition(
     spaceIndex: number,
     playerIndex: number,
-    totalPlayersOnSpace: number,
-    boardEl: HTMLElement | null,
-): TokenPosition | null {
-    // Célmező DOM elem keresése data attribútum alapján
-    const spaceEl = document.querySelector(`[data-space-id="${spaceIndex}"]`);
-    if (!spaceEl || !boardEl) return null;
+    totalPlayersOnSpace: number
+): TokenPosition {
+    const { row, col } = getGridCoords(spaceIndex);
 
-    // Bounding rect-ek lekérése
-    const spaceRect = spaceEl.getBoundingClientRect();
-    const boardRect = boardEl.getBoundingClientRect();
+    // Alaphelyzet: a 11x11-es rács cellájának közepe
+    // Egy cella szélessége: 100% / 11 ~ 9.09%
+    const cellSize = 100 / 11;
+    let x = (col - 1 + 0.5) * cellSize;
+    let y = (row - 1 + 0.5) * cellSize;
 
-    // Középpont kiszámítása az overlay réteghez viszonyítva
-    const centerX = spaceRect.left - boardRect.left + spaceRect.width / 2;
-    const centerY = spaceRect.top - boardRect.top + spaceRect.height / 2;
-
-    // Ütközéselkerülő eltolás (Anti-Collision Offset)
-    // Ha több játékos van egy mezőn, szétszórjuk őket szimmetrikusan
-    let offsetX = 0;
-    let offsetY = 0;
-
+    // AAA Anti-Collision: Pixel helyett %-os eltolás
     if (totalPlayersOnSpace > 1) {
-        // Szimmetrikus eltolás a középpont körül
-        offsetX = (playerIndex - (totalPlayersOnSpace - 1) / 2) * 10;
-        offsetY = (playerIndex - (totalPlayersOnSpace - 1) / 2) * -8;
+        const offsetStep = 1.2; // ~1.2% eltolás
+        x += (playerIndex - (totalPlayersOnSpace - 1) / 2) * offsetStep;
+        y += (playerIndex - (totalPlayersOnSpace - 1) / 2) * -offsetStep;
     }
 
-    return {
-        x: centerX + offsetX,
-        y: centerY + offsetY,
-    };
+    return { x, y };
 }
 
-/**
- * Az összes aktív (nem csődölt) játékos pozícióját újraszámolja.
- * Használd a resize event kezelésekor.
- *
- * @param players - Játékos tömb (id, position, isBankrupt)
- * @param boardEl - Az overlay réteg DOM referenciája
- * @returns Map: playerId → TokenPosition
- */
 export function recalculateAllPositions(
-    players: { id: string; position: number; isBankrupt: boolean }[],
-    boardEl: HTMLElement | null,
+    players: { id: string; position: number; isBankrupt: boolean }[]
 ): Map<string, TokenPosition> {
     const positionMap = new Map<string, TokenPosition>();
-
-    // Csoportosítás mezők szerint (Anti-Collision)
-    const spaceGroups = new Map<number, typeof players>();
     const activePlayers = players.filter(p => !p.isBankrupt);
 
+    // Csoportosítás mezők szerint
+    const spaceGroups = new Map<number, typeof players>();
     activePlayers.forEach(p => {
         const group = spaceGroups.get(p.position) || [];
         group.push(p);
         spaceGroups.set(p.position, group);
     });
 
-    // Pozíciók kiszámolása
-    spaceGroups.forEach((group, _spaceIndex) => {
-        group.forEach((player, indexInGroup) => {
-            const pos = calculateTokenPosition(
-                player.position,
-                indexInGroup,
-                group.length,
-                boardEl,
-            );
-            if (pos) {
-                positionMap.set(player.id, pos);
-            }
-        });
+    activePlayers.forEach(player => {
+        const group = spaceGroups.get(player.position)!;
+        const indexInGroup = group.findIndex(p => p.id === player.id);
+
+        positionMap.set(player.id, calculateTokenPosition(
+            player.position,
+            indexInGroup,
+            group.length
+        ));
     });
 
     return positionMap;

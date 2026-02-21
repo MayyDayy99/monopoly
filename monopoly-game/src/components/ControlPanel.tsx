@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { useGame, useTurnTimerExpired } from '../engine/GameHooks';
 import { BOARD_SPACES } from '../data/board';
 import { Dice } from './Dice';
-import { AnimatedMoney } from './AnimatedMoney';
-import { TurnTimer } from './TurnTimer';
 import { canRaiseFunds } from '../engine/gameLogic';
 
 export function ControlPanel() {
@@ -54,104 +52,60 @@ export function ControlPanel() {
 
     return (
         <div style={{
-            background: 'var(--bg-board)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '1rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.8rem',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-            height: '100%',
+            alignItems: 'center',
+            gap: '0.6rem',
+            width: '100%',
+            maxWidth: '320px',
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <div style={{
-                    fontFamily: "'Playfair Display', serif",
-                    color: 'var(--gold)',
-                    fontSize: '0.8rem',
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase'
-                }}>
-                    Budapest Edition
-                </div>
-            </div>
-
-            {/* Current Player */}
-            <motion.div
-                key={currentPlayer.id}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                    background: 'var(--bg-surface)',
-                    borderRadius: '10px',
-                    padding: '0.6rem',
-                    border: isInDebt ? '1px solid #ef4444' : '1px solid var(--border-active)',
-                    textAlign: 'center',
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', position: 'relative' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{currentPlayer.token}</span>
-                    <span style={{
-                        fontWeight: 700,
-                        color: currentPlayer.color,
-                        fontSize: '0.9rem',
-                    }}>
-                        {currentPlayer.name}
-                    </span>
-                    <div style={{ position: 'absolute', right: -5, top: -5 }}>
-                        <TurnTimer />
-                    </div>
-                </div>
-                <div style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    color: isInDebt ? '#f87171' : 'var(--gold-light)',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    marginTop: '0.2rem',
-                }}>
-                    <AnimatedMoney
-                        value={currentPlayer.money}
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            color: isInDebt ? '#f87171' : 'var(--gold-light)',
-                            fontWeight: 700,
-                            fontSize: '1rem',
-                        }}
-                    />
-                </div>
-                {isInDebt && (
-                    <div style={{ color: '#ef4444', fontSize: '0.7rem', fontWeight: 600, marginTop: '0.2rem' }}>
-                        ⚠️ TARTOZÁS!
-                    </div>
-                )}
-                {currentPlayer.inJail && (
-                    <div style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.2rem' }}>
-                        🔒 Börtönben ({currentPlayer.jailTurns}/3 kör)
-                    </div>
-                )}
-            </motion.div>
-
-            {/* Dice */}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {/* Dice Section */}
+            <div style={{
+                background: 'rgba(26, 29, 40, 0.4)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '12px',
+                padding: '0.8rem',
+                border: '1px solid rgba(199, 254, 27, 0.1)',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            }}>
                 <Dice result={state.dice} rolling={rolling} />
             </div>
 
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                {/* Rolling phase */}
-                {state.phase === 'rolling' && !currentPlayer.inJail && (
+            {/* Action Buttons Section */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.4rem',
+                width: '100%',
+            }}>
+
+                {/* ── IDŐ LEJÁRT → villogó Kör átadása gomb ── */}
+                {isExpired && state.phase !== 'turn-end' && (
                     <button
-                        className="btn-primary"
-                        onClick={handleRoll}
-                        disabled={rolling || isExpired}
+                        className="btn-primary blink-urgent"
+                        onClick={handleEndTurn}
                         style={{ fontSize: '1rem', padding: '0.7rem' }}
-                        title={isExpired ? "Lejárt az időd!" : ""}
                     >
-                        {isExpired ? '⌛ Idő lejárt' : '🎲 Dobás!'}
+                        ⏩ Kör átadása
                     </button>
                 )}
 
-                {state.phase === 'rolling' && currentPlayer.inJail && (
+                {/* Rolling phase */}
+                {state.phase === 'rolling' && !currentPlayer.inJail && !isExpired && (
+                    <button
+                        className="btn-primary"
+                        onClick={handleRoll}
+                        disabled={rolling}
+                        style={{ fontSize: '1rem', padding: '0.7rem' }}
+                    >
+                        🎲 Dobás!
+                    </button>
+                )}
+
+                {state.phase === 'rolling' && currentPlayer.inJail && !isExpired && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         <button className="btn-primary" onClick={() => dispatch({ type: 'TRY_JAIL_DOUBLES' })} disabled={rolling}>
                             🎲 Dupla próbálkozás
@@ -160,7 +114,7 @@ export function ControlPanel() {
                             💰 Bírság fizetése (50k)
                         </button>
                         {currentPlayer.hasGetOutOfJailCard > 0 && (
-                            <button className="btn-secondary" onClick={handleUseJailCard} disabled={rolling || isExpired}>
+                            <button className="btn-secondary" onClick={handleUseJailCard} disabled={rolling}>
                                 🃏 Kártya használata
                             </button>
                         )}
@@ -168,7 +122,7 @@ export function ControlPanel() {
                 )}
 
                 {/* Landed phase UI */}
-                {state.phase === 'landed' && currentSpace && (
+                {state.phase === 'landed' && currentSpace && !isExpired && (
                     <>
                         <button
                             className="btn-primary"
@@ -187,7 +141,7 @@ export function ControlPanel() {
                 )}
 
                 {/* Card drawn */}
-                {state.phase === 'card-drawn' && state.drawnCard && (
+                {state.phase === 'card-drawn' && state.drawnCard && !isExpired && (
                     <motion.div
                         className="drawn-card"
                         initial={{ rotateY: 180, opacity: 0 }}
@@ -246,13 +200,13 @@ export function ControlPanel() {
                             </>
                         ) : (
                             <button
-                                className="btn-primary animate-pulse-gold"
+                                className={`btn-primary ${isExpired ? 'blink-urgent' : 'animate-pulse-gold'}`}
                                 onClick={handleEndTurn}
                             >
-                                ▶️ Kör átadása
+                                ⏩ Kör átadása
                             </button>
                         )}
-                        <TradeModal disabled={isExpired} />
+                        {!isExpired && <TradeModal disabled={isExpired} />}
                     </>
                 )}
 
@@ -277,7 +231,7 @@ export function ControlPanel() {
                 borderTop: '1px solid var(--border)',
                 paddingTop: '0.5rem',
             }}>
-                📍 {currentSpace?.name || '—'} • 🏠 {state.houses_available} ház • 🏨 {state.hotels_available} hotel
+                📍 {currentSpace?.name || '—'} • 📊 {state.houses_available} LOD • 🌐 {state.hotels_available} DT
             </div>
         </div>
     );

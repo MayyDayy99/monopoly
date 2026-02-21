@@ -47,13 +47,13 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                     <table className="rent-table">
                         <tbody>
                             <tr><td>Ár</td><td>{space.property.price}k</td></tr>
-                            <tr><td>Alap bérleti díj</td><td>{space.property.rentBase}k</td></tr>
-                            <tr><td>1 házzal</td><td>{space.property.rent1H}k</td></tr>
-                            <tr><td>2 házzal</td><td>{space.property.rent2H}k</td></tr>
-                            <tr><td>3 házzal</td><td>{space.property.rent3H}k</td></tr>
-                            <tr><td>4 házzal</td><td>{space.property.rent4H}k</td></tr>
-                            <tr><td>Szállodával</td><td>{space.property.rentHotel}k</td></tr>
-                            <tr><td>Ház ára</td><td>{space.property.houseCost}k</td></tr>
+                            <tr><td>Alap szkennel díj</td><td>{space.property.rentBase}k</td></tr>
+                            <tr><td>LOD 100</td><td>{space.property.rent1H}k</td></tr>
+                            <tr><td>LOD 200</td><td>{space.property.rent2H}k</td></tr>
+                            <tr><td>LOD 300</td><td>{space.property.rent3H}k</td></tr>
+                            <tr><td>LOD 400</td><td>{space.property.rent4H}k</td></tr>
+                            <tr><td>Digitális Iker</td><td>{space.property.rentHotel}k</td></tr>
+                            <tr><td>LOD Szint ára</td><td>{space.property.houseCost}k</td></tr>
                             <tr><td>Jelzálog</td><td>{space.property.mortgageValue}k</td></tr>
                         </tbody>
                     </table>
@@ -63,10 +63,10 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                     <table className="rent-table">
                         <tbody>
                             <tr><td>Ár</td><td>{space.railroad.price}k</td></tr>
-                            <tr><td>1 állomás</td><td>25k</td></tr>
-                            <tr><td>2 állomás</td><td>50k</td></tr>
-                            <tr><td>3 állomás</td><td>100k</td></tr>
-                            <tr><td>4 állomás</td><td>200k</td></tr>
+                            <tr><td>1 technológia</td><td>25k</td></tr>
+                            <tr><td>2 technológia</td><td>50k</td></tr>
+                            <tr><td>3 technológia</td><td>100k</td></tr>
+                            <tr><td>4 technológia</td><td>200k</td></tr>
                             <tr><td>Jelzálog</td><td>{space.railroad.mortgageValue}k</td></tr>
                         </tbody>
                     </table>
@@ -76,8 +76,8 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                     <table className="rent-table">
                         <tbody>
                             <tr><td>Ár</td><td>{space.utility.price}k</td></tr>
-                            <tr><td>1 közművel</td><td>4× dobás</td></tr>
-                            <tr><td>2 közművel</td><td>10× dobás</td></tr>
+                            <tr><td>1 szerver</td><td>4× dobás</td></tr>
+                            <tr><td>2 szerver</td><td>10× dobás</td></tr>
                             <tr><td>Jelzálog</td><td>{space.utility.mortgageValue}k</td></tr>
                         </tbody>
                     </table>
@@ -91,7 +91,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                         </span>
                         {owned && (
                             <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                                {owned.hasHotel ? '🏨 Szálloda' : owned.houses > 0 ? `🏠 ${owned.houses} ház` : 'Beépítetlen'}
+                                {owned.hasHotel ? '🌐 Digitális Iker' : owned.houses > 0 ? `📊 LOD ${owned.houses * 100}` : 'Nyers felmérés'}
                                 {owned.isMortgaged && ' • 🏦 Jelzálogban'}
                             </div>
                         )}
@@ -108,7 +108,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                                 disabled={isExpired}
                                 title={isExpired ? "Lejárt az időd!" : ""}
                             >
-                                🏠 {isExpired ? '⌛ Idő lejárt' : `Ház építése (${space.property?.houseCost}k)`}
+                                📊 {isExpired ? '⌛ Idő lejárt' : `LOD Szint telepítése (${space.property?.houseCost}k)`}
                             </button>
                         )}
                         {canBuildHotel(state, currentPlayer.id, spaceId) && (
@@ -118,7 +118,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                                 disabled={isExpired}
                                 title={isExpired ? "Lejárt az időd!" : ""}
                             >
-                                🏨 {isExpired ? '⌛ Idő lejárt' : `Szálloda építése (${space.property?.houseCost}k)`}
+                                🌐 {isExpired ? '⌛ Idő lejárt' : `Digitális Iker létrehozása (${space.property?.houseCost}k)`}
                             </button>
                         )}
                         {canSellHouse(state, currentPlayer.id, spaceId) && (
@@ -127,7 +127,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                                 onClick={() => dispatch({ type: 'SELL_HOUSE', spaceId })}
                                 style={{ borderColor: '#f87171' }}
                             >
-                                🏚️ Épület eladása (+{Math.floor((space.property?.houseCost || 0) / 2)}k)
+                                🏚️ LOD Szint eltávolítása (+{Math.floor((space.property?.houseCost || 0) / 2)}k)
                             </button>
                         )}
                         {!owned?.isMortgaged && owned?.houses === 0 && !owned?.hasHotel && (

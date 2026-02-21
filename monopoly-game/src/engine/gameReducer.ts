@@ -5,7 +5,7 @@ import type { GameState, GameAction, Player, LogEntry, AuctionState, HouseRules,
 import { BOARD_SPACES, STARTING_MONEY, GO_SALARY, JAIL_FINE, MAX_HOUSES, MAX_HOTELS } from '../data/board';
 import { CHANCE_CARDS, COMMUNITY_CARDS, shuffleDeck } from '../data/cards';
 import {
-    rollDice, movePlayer, calculateRent, canBuildHouse, canBuildHotel,
+    rollDice, calculateRent, canBuildHouse, canBuildHotel,
     canSellHouse, nearestRailroad, nearestUtility, calculateRepairs, generateLogId,
     calculateNetWorth,
 } from './gameLogic';
@@ -50,6 +50,9 @@ export function createInitialState(): GameState {
         houseRules: DEFAULT_HOUSE_RULES,
         turnTimer: null,
         freeParkingPool: 0,
+        tokenAnimState: 'IDLE',
+        totalStepsPending: 0,
+        targetPosition: null,
     };
 }
 
@@ -133,9 +136,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                         jailTurns: 0,
                     };
                     newState = { ...newState, players: updatedPlayers, doublesCount: 0 };
-                    newState = addLog(newState, currentPlayer.id, `🔓 ${currentPlayer.name} duplát dobott és kiszabadult a börtönből!`, 'jail');
-                    // Move normally
-                    return processMovement(newState, dice.total);
+                    newState = addLog(newState, currentPlayer.id, `🔓 ${currentPlayer.name} duplát dobott és elhagyta a No-Fly Zone-t!`, 'jail');
+                    // Phase: moving — a frontend indítja a szekvenciát
+                    return { ...newState, phase: 'moving', totalStepsPending: dice.total, tokenAnimState: 'MOVING' };
                 } else {
                     const newJailTurns = currentPlayer.jailTurns + 1;
                     if (newJailTurns >= 3) {
@@ -149,7 +152,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                         };
                         newState = { ...newState, players: updatedPlayers };
                         newState = addLog(newState, currentPlayer.id, `💰 ${currentPlayer.name} 3 kör után fizetett ${JAIL_FINE}k-t és kiszabadult.`, 'jail');
-                        return processMovement(newState, dice.total);
+                        return { ...newState, phase: 'moving', totalStepsPending: dice.total, tokenAnimState: 'MOVING' };
                     } else {
                         const updatedPlayers = [...newState.players];
                         updatedPlayers[state.currentPlayerIndex] = {
@@ -157,7 +160,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                             jailTurns: newJailTurns,
                         };
                         newState = { ...newState, players: updatedPlayers, phase: 'turn-end' };
-                        newState = addLog(newState, currentPlayer.id, `🔒 ${currentPlayer.name} nem dobott duplát. Marad a börtönben. (${newJailTurns}/3 kör)`, 'jail');
+                        newState = addLog(newState, currentPlayer.id, `🔒 ${currentPlayer.name} nem dobott duplát. Marad a No-Fly Zone-ban. (${newJailTurns}/3 kör)`, 'jail');
                         return newState;
                     }
                 }
@@ -168,11 +171,81 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             newState = { ...newState, doublesCount: newDoublesCount };
 
             if (newDoublesCount >= 3) {
-                newState = addLog(newState, currentPlayer.id, `🚔 ${currentPlayer.name} 3x duplát dobott — börtönbe megy!`, 'jail');
+                newState = addLog(newState, currentPlayer.id, `🚁 ${currentPlayer.name} 3x duplát dobott — No-Fly Zone!`, 'jail');
                 return sendToJail(newState, state.currentPlayerIndex);
             }
 
-            return processMovement(newState, dice.total);
+            // Phase: moving — a frontend indítja az async szekvenciát
+            return {
+                ...newState,
+                phase: 'moving',
+                totalStepsPending: dice.total,
+                tokenAnimState: 'MOVING'
+            };
+        }
+
+        // ──────────────────────────── SET_TOKEN_ANIM ────────────────────────────
+        case 'SET_TOKEN_ANIM': {
+            return { ...state, tokenAnimState: action.animState };
+        }
+
+        case 'MOVE_STEP': {
+            const cp = state.players[state.currentPlayerIndex];
+            const nextPos = (cp.position + 1) % 40;
+            const passedGo = nextPos === 0;
+
+            const updatedPlayers = [...state.players];
+            updatedPlayers[state.currentPlayerIndex] = {
+                ...cp,
+                position: nextPos,
+                money: cp.money + (passedGo ? GO_SALARY : 0),
+            };
+
+            // AAA Sequence Check: Megérkeztünk? (Abszolút cél vagy elfogyott lépések)
+            const stepsRemaining = Math.max(0, state.totalStepsPending - 1);
+            const reachedTarget = state.targetPosition !== null && nextPos === state.targetPosition;
+            const sequenceFinished = (state.totalStepsPending > 0 && stepsRemaining === 0) || reachedTarget;
+
+            let newState: GameState = {
+                ...state,
+                players: updatedPlayers,
+                totalStepsPending: stepsRemaining,
+                targetPosition: reachedTarget ? null : state.targetPosition,
+                tokenAnimState: sequenceFinished ? 'IDLE' : 'MOVING'
+            };
+
+            if (passedGo) {
+                newState = addLog(newState, cp.id, `➡️ ${cp.name} átlépte a START-ot és kapott ${GO_SALARY}k-t.`, 'system');
+            }
+
+            if (sequenceFinished) {
+                return processLanding({ ...newState, phase: 'landed' });
+            }
+
+            return newState;
+        }
+
+        case 'MOVE_TELEPORT': {
+            const cp = state.players[state.currentPlayerIndex];
+            const updatedPlayers = [...state.players];
+            updatedPlayers[state.currentPlayerIndex] = {
+                ...cp,
+                position: action.position,
+                money: cp.money + (action.passedGo ? GO_SALARY : 0),
+            };
+
+            let newState: GameState = {
+                ...state,
+                players: updatedPlayers,
+                totalStepsPending: 0,
+                tokenAnimState: 'IDLE'
+            };
+
+            if (action.passedGo) {
+                newState = addLog(newState, cp.id, `➡️ ${cp.name} átlépte a START-ot és kapott ${GO_SALARY}k-t.`, 'system');
+            }
+
+            return processLanding({ ...newState, phase: 'landed' });
         }
 
         // ──────────────────────────── PAY JAIL FINE ────────────────────────────
@@ -187,7 +260,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 money: cp.money - JAIL_FINE,
             };
             let newState: GameState = { ...state, players: updated, phase: 'rolling' };
-            newState = addLog(newState, cp.id, `💰 ${cp.name} fizetett ${JAIL_FINE}k-t a börtönből való szabadulásért.`, 'jail');
+            newState = addLog(newState, cp.id, `💰 ${cp.name} fizetett ${JAIL_FINE}k-t a No-Fly Zone elhagyásáért.`, 'jail');
             return newState;
         }
 
@@ -246,6 +319,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 players: updatedPlayers,
                 ownedProperties: newOwned,
                 phase: 'turn-end',
+                tokenAnimState: 'ACTION',
             };
             newState = addLog(newState, cp.id, `🏠 ${cp.name} megvásárolta: ${space.name} (${price}k)`, 'buy');
             return newState;
@@ -271,7 +345,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 ownedProperties: newOwned,
                 houses_available: state.houses_available - 1,
             };
-            newState = addLog(newState, cp.id, `🏗️ ${cp.name} épített egy házat: ${space.name} (${owned.houses + 1}. ház, ${cost}k)`, 'build');
+            newState = addLog(newState, cp.id, `📊 ${cp.name} LOD szintet telepített: ${space.name} (LOD ${(owned.houses + 1) * 100}, ${cost}k)`, 'build');
             return newState;
         }
 
@@ -296,7 +370,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 houses_available: state.houses_available + 4,
                 hotels_available: state.hotels_available - 1,
             };
-            newState = addLog(newState, cp.id, `🏨 ${cp.name} szállodát épített: ${space.name} (${cost}k)`, 'build');
+            newState = addLog(newState, cp.id, `🌐 ${cp.name} Digitális Ikert hozott létre: ${space.name} (${cost}k)`, 'build');
             return newState;
         }
 
@@ -413,20 +487,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                     break;
                 }
                 case 'move-to': {
-                    const target = card.action.position;
-                    const passedGo = target < cp.position && target !== 10;
-                    const updatedPlayers = [...newState.players];
-                    const bonus = passedGo ? GO_SALARY : 0;
-                    updatedPlayers[state.currentPlayerIndex] = {
-                        ...cp,
-                        position: target,
-                        money: cp.money + bonus,
+                    // AAA Movement: teleport helyett szekvenciális léptetés
+                    return {
+                        ...newState,
+                        phase: 'moving',
+                        targetPosition: card.action.position,
+                        tokenAnimState: 'MOVING'
                     };
-                    newState = { ...newState, players: updatedPlayers };
-                    if (passedGo) {
-                        newState = addLog(newState, cp.id, `➡️ ${cp.name} átlépte a START-ot és kapott ${GO_SALARY}k-t.`, 'system');
-                    }
-                    return processLanding(newState);
                 }
                 case 'move-back': {
                     const updatedPlayers = [...newState.players];
@@ -491,27 +558,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
                 case 'advance-to-nearest-railroad': {
                     const target = nearestRailroad(cp.position);
-                    const passedGo = target < cp.position;
-                    const updatedPlayers = [...newState.players];
-                    updatedPlayers[state.currentPlayerIndex] = {
-                        ...cp,
-                        position: target,
-                        money: cp.money + (passedGo ? GO_SALARY : 0),
-                    };
-                    newState = { ...newState, players: updatedPlayers };
-                    return processLanding(newState);
+                    return { ...newState, phase: 'moving', targetPosition: target, tokenAnimState: 'MOVING' };
                 }
                 case 'advance-to-nearest-utility': {
                     const target = nearestUtility(cp.position);
-                    const passedGo = target < cp.position;
-                    const updatedPlayers = [...newState.players];
-                    updatedPlayers[state.currentPlayerIndex] = {
-                        ...cp,
-                        position: target,
-                        money: cp.money + (passedGo ? GO_SALARY : 0),
-                    };
-                    newState = { ...newState, players: updatedPlayers };
-                    return processLanding(newState);
+                    return { ...newState, phase: 'moving', targetPosition: target, tokenAnimState: 'MOVING' };
                 }
             }
 
@@ -527,8 +578,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 return gameReducer(state, { type: 'DECLARE_BANKRUPTCY' });
             }
 
-            // If doubled and not in jail, roll again
-            if (state.dice?.isDouble && !cp.inJail && state.doublesCount > 0) {
+            // Timer lejárt → azonnal következő játékos, dupla-dobás nem számít
+            const timerExpired = state.turnTimer != null && Date.now() > state.turnTimer;
+
+            // If doubled and not in jail AND timer still active, roll again
+            if (!timerExpired && state.dice?.isDouble && !cp.inJail && state.doublesCount > 0) {
                 return { ...state, phase: 'rolling', drawnCard: null };
             }
 
@@ -560,6 +614,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 doublesCount: 0,
                 drawnCard: null,
                 turnTimer: Date.now() + 60000,
+                tokenAnimState: 'IDLE',
             };
             newState = addLog(newState, state.players[nextIndex].id, `▶️ ${state.players[nextIndex].name} köre következik.`, 'system');
             return newState;
@@ -909,28 +964,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 }
 
-// ============================================================
-// HELPER: Process Movement
-// ============================================================
-function processMovement(state: GameState, steps: number): GameState {
-    const cp = state.players[state.currentPlayerIndex];
-    const { newPosition, passedGo } = movePlayer(cp, steps);
-
-    const updatedPlayers = [...state.players];
-    updatedPlayers[state.currentPlayerIndex] = {
-        ...cp,
-        position: newPosition,
-        money: cp.money + (passedGo ? GO_SALARY : 0),
-    };
-
-    let newState: GameState = { ...state, players: updatedPlayers, phase: 'landed' };
-
-    if (passedGo) {
-        newState = addLog(newState, cp.id, `➡️ ${cp.name} átlépte a START-ot és kapott ${GO_SALARY}k-t.`, 'system');
-    }
-
-    return processLanding(newState);
-}
+// processMovement eltávolítva - helyette MOVE_STEP / MOVE_TELEPORT van AAA logikával
 
 // ============================================================
 // HELPER: Process Landing on a Space
@@ -1040,13 +1074,13 @@ function processLanding(state: GameState): GameState {
 
         case 'jail':
             newState = { ...newState, phase: 'turn-end' };
-            newState = addLog(newState, cp.id, `👀 ${cp.name} csak látogatóba jött a börtönbe.`, 'system');
+            newState = addLog(newState, cp.id, `👀 ${cp.name} csak átrepült a No-Fly Zone felett.`, 'system');
             break;
 
 
 
         case 'go-to-jail':
-            newState = addLog(newState, cp.id, `🚔 ${cp.name} börtönbe megy!`, 'jail');
+            newState = addLog(newState, cp.id, `🚁 ${cp.name} a No-Fly Zone-ba került!`, 'jail');
             return sendToJail(newState, state.currentPlayerIndex);
 
         default:

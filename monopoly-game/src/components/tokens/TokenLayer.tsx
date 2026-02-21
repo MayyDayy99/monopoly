@@ -1,96 +1,86 @@
-// ============================================================
-// TOKEN LAYER — Az overlay réteg a bábuk renderelésére
-// A tábla felett lebeg, és CSS transform: translate() segítségével
-// hardveresen gyorsított mozgást biztosít minden token számára.
-// ============================================================
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../../engine/GameHooks';
 import { getTokenByEmoji } from './TokenRegistry';
-import { recalculateAllPositions, type TokenPosition } from './tokenPositioning';
+import { recalculateAllPositions } from './tokenPositioning';
 
 /**
- * Az overlay réteg komponens.
- * A `.board-grid` felett lebeg, és minden aktív játékos tokenjét rendereli
- * abszolút pozícióban, CSS transform: translate(x, y) segítségével.
+ * TOKEN LAYER — AAA Mozgásmotor (Framer Motion Edition)
+ * A korábbi CSS tranzíciókat Framer Motion-re cseréltük a maximális fluiditásért.
+ * Ez kezeli az "Easy-In/Easy-Out" élményt és a bábuk súlyát.
  */
 export function TokenLayer() {
     const { state } = useGame();
-    const layerRef = useRef<HTMLDivElement>(null);
-    const [positions, setPositions] = useState<Map<string, TokenPosition>>(new Map());
 
-    // Pozíciók újraszámolása
-    const updatePositions = useCallback(() => {
-        if (!layerRef.current) return;
-        const newPositions = recalculateAllPositions(state.players, layerRef.current);
-        setPositions(newPositions);
+    const positions = useMemo(() => {
+        return recalculateAllPositions(state.players);
     }, [state.players]);
 
-    // Pozíciók frissítése ha változik a játékosok pozíciója
-    useEffect(() => {
-        // Kis késleltetés, hogy a DOM renderelés garantáltan megtörténjen
-        const timeout = setTimeout(updatePositions, 50);
-        return () => clearTimeout(timeout);
-    }, [updatePositions]);
-
-    // ResizeObserver: ablak átméretezésekor automatikus újraszámolás
-    useEffect(() => {
-        const boardGrid = document.querySelector('.board-grid');
-        if (!boardGrid) return;
-
-        const observer = new ResizeObserver(() => {
-            updatePositions();
-        });
-        observer.observe(boardGrid);
-
-        return () => observer.disconnect();
-    }, [updatePositions]);
-
-    // Aktív (nem csődölt) játékosok
     const activePlayers = state.players.filter(p => !p.isBankrupt);
 
     return (
         <div
             id="tokens-layer"
-            ref={layerRef}
             style={{
                 position: 'absolute',
                 inset: 0,
-                zIndex: 20,
-                pointerEvents: 'none', // Kattintások átmennek a tábla celláira
+                zIndex: 100,
+                pointerEvents: 'none',
+                overflow: 'visible'
             }}
         >
-            {activePlayers.map(player => {
-                const pos = positions.get(player.id);
-                const tokenDef = getTokenByEmoji(player.token);
-                const TokenComponent = tokenDef.component;
-                const isCurrentPlayer = state.players[state.currentPlayerIndex]?.id === player.id;
+            <AnimatePresence>
+                {activePlayers.map(player => {
+                    const pos = positions.get(player.id);
+                    const tokenDef = getTokenByEmoji(player.token);
+                    const TokenComponent = tokenDef.component;
+                    const isCurrentPlayer = state.players[state.currentPlayerIndex]?.id === player.id;
+                    const isMoving = isCurrentPlayer && state.tokenAnimState === 'MOVING';
 
-                return (
-                    <div
-                        key={player.id}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            // Hardveresen gyorsított mozgás — TILOS top/left animálás!
-                            transform: pos
-                                ? `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%)`
-                                : 'translate(-9999px, -9999px)',
-                            transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                            pointerEvents: 'auto',
-                            zIndex: isCurrentPlayer ? 25 : 21,
-                        }}
-                        title={player.name}
-                    >
-                        <TokenComponent
-                            size={20}
-                            color={player.color}
-                            isAnimating={isCurrentPlayer}
-                            label={player.name}
-                        />
-                    </div>
-                );
-            })}
+                    if (!pos) return null;
+
+                    return (
+                        <motion.div
+                            key={player.id}
+                            className={`token-container ${isCurrentPlayer ? 'active-token' : ''} ${isMoving ? 'moving-token' : ''}`}
+                            initial={false}
+                            animate={{
+                                left: `${pos.x}%`,
+                                top: `${pos.y}%`,
+                                // Elevation (Z-axis simulation)
+                                scale: isMoving ? 1.45 : 1,
+                                rotate: isMoving ? 4 : 0,
+                            }}
+                            transition={{
+                                // AAA Fluiditás: Egy közepesen lágy rugó (Spring) biztosítja a folyamatosságot.
+                                // Ha a célpont változik (MOVE_STEP), a rugó simán átvezeti a mozgást.
+                                type: 'spring',
+                                stiffness: 60,
+                                damping: 18,
+                                mass: 0.8,
+                                // A scale és rotate kicsit gyorsabb lehet mint a haladás
+                                scale: { duration: 0.3 },
+                                rotate: { duration: 0.3 }
+                            }}
+                            style={{
+                                position: 'absolute',
+                                transform: 'translate(-50%, -50%)', // Centerezés fix marad
+                                pointerEvents: 'auto',
+                                zIndex: isMoving ? 200 : (isCurrentPlayer ? 150 : 110),
+                                willChange: 'left, top, transform'
+                            }}
+                        >
+                            <TokenComponent
+                                size={26}
+                                color={player.color}
+                                isAnimating={isCurrentPlayer}
+                                label={player.name}
+                                tokenState={isCurrentPlayer ? state.tokenAnimState : 'IDLE'}
+                            />
+                        </motion.div>
+                    );
+                })}
+            </AnimatePresence>
         </div>
     );
 }

@@ -41,3 +41,71 @@ export function useTurnTimerExpired() {
 
     return isExpired;
 }
+
+/**
+ * AAA Szekvenciális Mozgáskezelő (Async Routing)
+ * Amikor a fázis 'moving'-ra vált, ez a hook lépésről lépésre
+ * lépteti a bábut, amíg el nem fogy a pending Steps.
+ */
+export function useAsyncMovement() {
+    const { state, dispatch } = useGame();
+    const [isMoving, setIsMoving] = useState(false);
+
+    useEffect(() => {
+        const hasPendingSteps = state.totalStepsPending > 0;
+        const hasTargetPos = state.targetPosition !== null && state.targetPosition !== state.players[state.currentPlayerIndex]?.position;
+
+        if (state.phase === 'moving' && (hasPendingSteps || hasTargetPos) && !isMoving) {
+            const runMovement = async () => {
+                setIsMoving(true);
+                // AAA Super Snappy: minimális indulási késleltetés
+                await new Promise(r => setTimeout(r, 100));
+
+                if (hasPendingSteps) {
+                    let steps = state.totalStepsPending;
+                    while (steps > 0) {
+                        dispatch({ type: 'MOVE_STEP' });
+                        steps--;
+                        // AAA Flow: 160ms ütemezés a 600ms-os tranzícióhoz tökéletes "csúszást" ad
+                        await new Promise(r => setTimeout(r, 160));
+                    }
+                } else if (hasTargetPos) {
+                    const cp = state.players[state.currentPlayerIndex];
+                    let current = cp.position;
+                    const target = state.targetPosition!;
+                    while (current !== target) {
+                        dispatch({ type: 'MOVE_STEP' });
+                        current = (current + 1) % 40;
+                        await new Promise(r => setTimeout(r, 160));
+                    }
+                }
+                setIsMoving(false);
+            };
+            runMovement();
+        }
+    }, [state.phase, state.totalStepsPending, state.targetPosition, isMoving, dispatch]);
+}
+
+/**
+ * Automatikus tokenAnimState visszaállítás.
+ * MOVING → IDLE 0.5s után (a CSS transition ideje)
+ * ACTION → IDLE 2s után (a szkenneranimáció ideje)
+ */
+export function useTokenAnimReset() {
+    const { state, dispatch } = useGame();
+
+    useEffect(() => {
+        if (state.tokenAnimState === 'MOVING') {
+            const timeout = setTimeout(() => {
+                dispatch({ type: 'SET_TOKEN_ANIM', animState: 'IDLE' });
+            }, 600);
+            return () => clearTimeout(timeout);
+        }
+        if (state.tokenAnimState === 'ACTION') {
+            const timeout = setTimeout(() => {
+                dispatch({ type: 'SET_TOKEN_ANIM', animState: 'IDLE' });
+            }, 2000);
+            return () => clearTimeout(timeout);
+        }
+    }, [state.tokenAnimState, dispatch]);
+}

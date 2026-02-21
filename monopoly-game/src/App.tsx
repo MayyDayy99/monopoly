@@ -1,16 +1,17 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { GameProvider } from './engine/GameContext';
 import { useGame } from './engine/GameHooks';
 import { PlayerSetup } from './components/PlayerSetup';
 import { Board } from './components/Board';
 import { PlayerStats } from './components/PlayerStats';
-import { EventLog } from './components/EventLog';
 import { WinnerScreen } from './components/WinnerScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { DebugPanel } from './components/DebugPanel';
 import { AuctionPanel } from './components/AuctionPanel';
 import { TradeResponseModal } from './components/TradeModal';
 import { HouseRulesPanel } from './components/HouseRulesPanel';
+import { LoricatusHUD } from './components/LoricatusHUD';
+import { EventLog } from './components/EventLog';
 import { useBotPlayer } from './engine/useBotPlayer';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
@@ -33,30 +34,30 @@ function GameContent() {
   return (
     <>
       <div className="game-layout">
-        {/* Board */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'start' }}>
+        {/* ── BAL OLDAL: LORICATUS VEZÉRLŐPULT (400px) ── */}
+        <aside className="loricatus-hud">
+          <LoricatusHUD />
+
+          <div className="hud-scroll-content">
+            <PlayerStats />
+
+            <div className="sidebar-card">
+              <h3>🏘️ Ingatlanjaim</h3>
+              <PlayerInventory />
+            </div>
+
+            <CollapsibleEventLog />
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
+              <HouseRulesPanel />
+            </div>
+          </div>
+        </aside>
+
+        {/* ── JOBB OLDAL: DINAMIKUS TÁBLA KONTÉNER ── */}
+        <main className="game-board-section">
           <Board />
-        </div>
-
-        {/* Sidebar */}
-        <div className="sidebar">
-          <PlayerStats />
-          {/* #88: aria-live a loghoz */}
-          <div aria-live="polite" aria-atomic="false">
-            <EventLog />
-          </div>
-
-          {/* Inventory — #48: color-grouped properties */}
-          <div className="sidebar-card">
-            <h3>🏘️ Ingatlanjaim</h3>
-            <PlayerInventory />
-          </div>
-
-          {/* House rules button in sidebar */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
-            <HouseRulesPanel />
-          </div>
-        </div>
+        </main>
       </div>
 
       <WinnerScreen />
@@ -64,6 +65,39 @@ function GameContent() {
       <TradeResponseModal />
       <DebugPanel />
     </>
+  );
+}
+
+function CollapsibleEventLog() {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="sidebar-card">
+      <div
+        onClick={() => setIsOpen(o => !o)}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
+      >
+        <h3 style={{ margin: 0 }}>📋 Eseménynapló</h3>
+        <span style={{
+          fontSize: '0.8rem',
+          color: 'var(--neon)',
+          transition: 'transform 0.2s',
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+        }}>
+          ▼
+        </span>
+      </div>
+      {isOpen && (
+        <div style={{ marginTop: '0.5rem' }}>
+          <EventLog />
+        </div>
+      )}
+    </div>
   );
 }
 

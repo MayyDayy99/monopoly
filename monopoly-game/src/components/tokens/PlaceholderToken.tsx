@@ -1,6 +1,6 @@
 // ============================================================
 // PLACEHOLDER TOKEN — Ideiglenes dummy bábu a scaffolding fázishoz
-// A végleges SVG animált token komponensek (Drón, Szkenner, Robotkutya)
+// A végleges SVG animált token komponensek (Drónok, Szkenner)
 // ide fognak bekerülni, ugyanezzel az interfesszel.
 // ============================================================
 
