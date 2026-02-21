@@ -246,9 +246,14 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                         padding: '0.8rem',
                         fontSize: '1.1rem',
                         letterSpacing: '0.05em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.6rem'
                     }}
                 >
-                    🎲 Játék indítása!
+                    <img src={logoKicsi} alt="" style={{ width: '20px', height: 'auto' }} />
+                    Játék indítása!
                 </motion.button>
 
                 <p style={{

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import logoKicsi from '../assets/logo_kicsi.png';
 import { TradeModal } from './TradeModal';
 import { motion } from 'framer-motion';
 import { useGame, useTurnTimerExpired } from '../engine/GameHooks';
@@ -99,9 +100,17 @@ export function ControlPanel() {
                         className="btn-primary"
                         onClick={handleRoll}
                         disabled={rolling}
-                        style={{ fontSize: '1rem', padding: '0.7rem' }}
+                        style={{
+                            fontSize: '1rem',
+                            padding: '0.7rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.6rem'
+                        }}
                     >
-                        🎲 Dobás!
+                        <img src={logoKicsi} alt="" style={{ width: '18px', height: 'auto' }} />
+                        Dobás!
                     </button>
                 )}
 

@@ -2,6 +2,7 @@
 // WINNER SCREEN — Victory overlay with detailed stats (#85)
 // ============================================================
 import { motion } from 'framer-motion';
+import logoKicsi from '../assets/logo_kicsi.png';
 import { useGame } from '../engine/GameHooks';
 import { clearSave } from '../engine/storage';
 import { calculateNetWorth } from '../engine/gameLogic';
@@ -52,9 +53,9 @@ export function WinnerScreen() {
                     initial={{ y: -30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    style={{ fontSize: '4rem', marginBottom: '1rem' }}
+                    style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}
                 >
-                    🏆
+                    <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '100px', height: 'auto', filter: 'drop-shadow(0 0 20px var(--neon))' }} />
                 </motion.div>
                 <h1>Győzelem!</h1>
                 <div className="winner-name">
@@ -136,9 +137,17 @@ export function WinnerScreen() {
                     onClick={handleReload}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    style={{ fontSize: '1.1rem', padding: '0.8rem 2rem' }}
+                    style={{
+                        fontSize: '1.1rem',
+                        padding: '0.8rem 2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.6rem'
+                    }}
                 >
-                    🎲 Új játék
+                    <img src={logoKicsi} alt="" style={{ width: '20px', height: 'auto' }} />
+                    Új játék
                 </motion.button>
             </motion.div>
         </div>

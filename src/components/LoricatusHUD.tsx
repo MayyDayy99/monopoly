@@ -23,8 +23,19 @@ export function LoricatusHUD() {
     return (
         <div className="hud-current-player">
             {/* ── Logo ── */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', opacity: 0.8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem', opacity: 0.8 }}>
                 <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '40px', height: 'auto' }} />
+                <div style={{
+                    fontFamily: 'Orbitron, sans-serif',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    marginTop: '0.4rem',
+                    color: 'var(--neon)',
+                    textTransform: 'uppercase'
+                }}>
+                    Monopoly by Loricatus
+                </div>
             </div>
 
             {/* ── Nagy token konténer ── */}

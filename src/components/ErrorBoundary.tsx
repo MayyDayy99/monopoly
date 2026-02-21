@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import logoKicsi from '../assets/logo_kicsi.png';
 
 interface Props {
     children: ReactNode;
@@ -109,9 +110,13 @@ export class ErrorBoundary extends Component<Props, State> {
                                     border: '1px solid rgba(201, 168, 76, 0.15)',
                                     borderRadius: '6px',
                                     cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem'
                                 }}
                             >
-                                🎲 Új játék
+                                <img src={logoKicsi} alt="" style={{ width: '16px', height: 'auto' }} />
+                                Új játék
                             </button>
                         </div>
                     </div>
