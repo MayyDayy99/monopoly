@@ -53,6 +53,9 @@ export function LoricatusHUD() {
                     }}>
                         Monopoly by Loricatus
                     </div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.5rem', color: 'var(--text-secondary)', opacity: 0.6, marginTop: '0.1rem' }}>
+                        3D Digitalizáció
+                    </div>
                 </div>
             </div>
 

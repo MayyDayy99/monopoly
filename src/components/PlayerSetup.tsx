@@ -75,6 +75,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                     <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '80px', height: 'auto' }} />
                 </div>
                 <h1 className="setup-title">Monopoly by Loricatus</h1>
+                <div className="setup-subtitle">Magyar Műemlékek • 3D Digitalizációs Társasjáték</div>
 
                 {/* Player Count */}
                 <div style={{ marginBottom: '1.5rem' }}>

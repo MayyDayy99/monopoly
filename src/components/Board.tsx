@@ -102,6 +102,9 @@ export function Board() {
                             <div style={{ fontFamily: "'Orbitron', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: 'var(--neon)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                                 Monopoly by Loricatus
                             </div>
+                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+                                Magyar Műemlékek • 3D Digitalizáció
+                            </div>
                         </div>
                         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                             <ControlPanel />
