@@ -247,33 +247,11 @@ function ResumeBar() {
   if (!saved) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: 'rgba(26,29,40,0.95)',
-      borderTop: '1px solid var(--gold)',
-      padding: '0.3rem 1rem',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '0.5rem',
-      zIndex: 100,
-      fontSize: '0.75rem',
-    }}>
-      <span style={{ color: 'var(--gold-light)' }}>💾 Mentett játék betöltve</span>
+    <div className="resume-bar">
+      <span className="resume-text">💾 Mentett játék betöltve</span>
       <button
+        className="resume-btn"
         onClick={() => { clearSave(); window.location.reload(); }}
-        style={{
-          background: '#353a52',
-          color: '#eae8e0',
-          border: '1px solid rgba(201,168,76,0.15)',
-          borderRadius: '4px',
-          padding: '0.2rem 0.5rem',
-          cursor: 'pointer',
-          fontSize: '0.7rem',
-        }}
       >
         🗑️ Új játék
       </button>

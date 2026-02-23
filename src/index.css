@@ -2038,3 +2038,78 @@ body {
     margin-top: 1rem !important;
   }
 }
+/* ============================================================
+   RESUME BAR  Discreet floating notification
+   ============================================================ */
+.resume-bar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-active);
+  border-left: 4px solid var(--neon);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  z-index: 5000;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(199, 254, 27, 0.1);
+  animation: slide-in-right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.resume-text {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.resume-btn {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.resume-btn:hover {
+  background: #3b4252;
+  color: #ef4444;
+  border-color: #ef444466;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%) scale(0.9); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .resume-bar {
+    top: auto;
+    bottom: 20px;
+    right: 15px;
+    left: auto;
+    padding: 0.6rem 0.9rem;
+    gap: 0.75rem;
+    border-radius: 10px;
+    transform-origin: bottom right;
+    max-width: 240px;
+    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+  }
+
+  .resume-text {
+    font-size: 0.75rem;
+  }
+
+  .resume-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
