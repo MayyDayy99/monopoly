@@ -660,14 +660,18 @@ body {
    ============================================================ */
 
 .setup-container {
-  min-height: 100vh;
+  min-height: 100dvh;
+  /* Dinamikus Viewport magasság a modern mobilokhoz */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  padding-bottom: 3rem;
+  /* Extra hely az alján a görgetéshez */
   background: transparent;
   overflow-x: hidden;
   overflow-y: auto;
+  /* Biztosítjuk a görgethetőséget, ha nem fér ki a tartalom */
 }
 
 .setup-card {
@@ -678,14 +682,16 @@ body {
   padding: 1.25rem;
   max-width: 440px;
   width: 100%;
-  max-height: 96vh;
+  max-height: none;
+  /* Eltávolítjuk a fix korlátot, hogy görgethető legyen */
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(199, 254, 27, 0.05);
   position: relative;
   z-index: 10;
   margin: auto;
-  overflow: hidden;
+  overflow: visible;
+  /* Engedjük a belső elemeknek a természetes méretet */
 }
 
 @media (max-width: 480px) {
@@ -1531,7 +1537,8 @@ body {
     flex-direction: column-reverse !important;
     /* Tábla felül, HUD alul */
     height: auto !important;
-    min-height: 100vh;
+    min-height: 100dvh;
+    /* Dinamikus viewport magasság fix */
     overflow-y: auto !important;
     display: flex !important;
     gap: 0 !important;
@@ -1565,19 +1572,21 @@ body {
   }
 
   /* Mezők belső skálázása dinamikus viewport egységekkel */
+  /* Mezők belső skálázása vmin egységgel (Landscape fix) */
   .board-space .space-name {
-    font-size: 1.8vw !important;
+    font-size: 2vmin !important;
+    /* vmin: a rövidebb oldalhoz igazodik, nem torzul elforgatáskor */
     padding: 0 1px !important;
     line-height: 1.1 !important;
   }
 
   .board-space .space-price {
-    font-size: 1.5vw !important;
+    font-size: 1.6vmin !important;
     margin-top: 1px !important;
   }
 
   .board-space.corner .space-name {
-    font-size: 2.1vw !important;
+    font-size: 2.3vmin !important;
   }
 
   .board-space .color-bar {
@@ -1792,17 +1801,18 @@ body {
   }
 
   /* Betűméretek a táblán - vh-alapú scaling */
+  /* Betűméretek a táblán - vmin alapú skálázás a torzulás ellen */
   .board-space .space-name {
-    font-size: 1.6vh !important;
+    font-size: 2vmin !important;
     line-height: 1 !important;
   }
 
   .board-space .space-price {
-    font-size: 1.4vh !important;
+    font-size: 1.6vmin !important;
   }
 
   .board-space.corner .space-name {
-    font-size: 1.9vh !important;
+    font-size: 2.3vmin !important;
   }
 
   /* HUD elemek kicsinyítése */
@@ -1901,5 +1911,50 @@ body {
   .dice-container {
     margin-bottom: 0 !important;
     gap: 0.15rem !important;
+  }
+}
+
+/* ============================================================
+   FÁZIS 3: DEDIKÁLT LANDSCAPE ELRENDEZÉS (Széles kijelzők, pl. Tablet fekve)
+   ============================================================ */
+@media (max-width: 1000px) and (orientation: landscape) {
+  .game-layout {
+    flex-direction: row !important;
+    /* Visszaváltunk fekvő elrendezésre */
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  /* A tábla méretét a magasság korlátozza, hogy ne lógjon ki */
+  .board-grid {
+    height: 90vh !important;
+    width: 90vh !important;
+    max-width: none !important;
+    aspect-ratio: 1/1 !important;
+  }
+
+  /* A HUD panel görgethetővé tétele, mert a magassága szűkös */
+  .loricatus-hud {
+    flex-direction: column !important;
+    height: 100dvh !important;
+    overflow-y: auto !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    border-right: 1px solid var(--border-active) !important;
+    border-top: none !important;
+  }
+
+  .hud-current-player {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .hud-player-info {
+    align-items: center !important;
+  }
+
+  .hud-scroll-content {
+    margin-top: 1rem !important;
   }
 }
