@@ -54,6 +54,8 @@ function GameContent() {
               <HouseRulesPanel />
             </div>
           </div>
+
+          <ResumeBar />
         </aside>
 
         {/* ── JOBB OLDAL: DINAMIKUS TÁBLA KONTÉNER ── */}
@@ -232,7 +234,6 @@ function GameWrapper() {
 
   return (
     <>
-      <ResumeBar />
       <OrientationOverlay gameStarted={gameStarted} />
       <GameContent />
     </>
