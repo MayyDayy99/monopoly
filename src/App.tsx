@@ -1,4 +1,9 @@
-import { useCallback, useState } from 'react';
+// ============================================================
+// LORICATUS PRIME ARCHITECT - APP ENTRY POINT
+// Szigorú nézet-kikényszerítés és Firebase integráció
+// ============================================================
+
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameProvider } from './engine/GameContext';
 import { useGame } from './engine/GameHooks';
@@ -18,52 +23,84 @@ import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
 import { clearSave, hasSavedGame } from './engine/storage';
 
+// Firebase modul és Lobby importálása
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 
+/**
+ * GameContent: A fő renderelési logika, amely kezeli a Lobby és Board közötti váltást.
+ */
 function GameContent() {
   const { state, dispatch } = useGame();
 
-  // P2: Auto-play bot turns (#73)
+  // Szigorú React State kikényszerítés a nézetváltáshoz
+  const [viewState, setViewState] = useState<'lobby' | 'playing'>('lobby');
+  const [roomData, setRoomData] = useState<string | null>(null);
+
+  // Bot logika aktiválása
   useBotPlayer();
 
-  const handleGameJoined = useCallback((roomId: string) => {
+  // Szinkronizáció: Ha a játék már tart (pl. frissítés után), ugorjunk a board-ra
+  useEffect(() => {
+    if (state.phase !== 'setup' && state.roomId) {
+      setViewState('playing');
+      setRoomData(state.roomId);
+    }
+  }, [state.phase, state.roomId]);
+
+  // Csatlakozás eseménykezelő
+  const handleGameJoined = useCallback((roomId: string, playerUid: string) => {
+    console.log(`[Loricatus] Csatlakozva a szobához: ${roomId}`);
+    setRoomData(roomId);
     dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
+    // Megjegyzés: A tényleges váltást a state.phase váltása fogja triggerelni a START_GAME után a useEffect-ben.
   }, [dispatch, state]);
 
-  // Induláskor KIZÁRÓLAG a Lobby (szobaválasztó vagy várakozó) látható
-  if (state.phase === 'setup') {
-    return <MultiplayerLobby onGameJoined={handleGameJoined} />;
-  }
-
   return (
-    <>
-      <div className="game-layout">
-        <aside className="loricatus-hud">
-          <LoricatusHUD />
-          <div className="hud-scroll-content">
-            <PlayerStats />
-            <div className="sidebar-card">
-              <h3>🏘️ Ingatlanjaim</h3>
-              <PlayerInventory />
-            </div>
-            <CollapsibleEventLog />
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
-              <HouseRulesPanel />
-            </div>
+    <div id="app-container" style={{ width: '100%', height: '100dvh', overflow: 'hidden' }}>
+
+      {/* 1. LOBBY (Váróterem) FÁZIS */}
+      {viewState === 'lobby' && (
+        <MultiplayerLobby onGameJoined={handleGameJoined} />
+      )}
+
+      {/* 2. PLAYING (Játéktábla) FÁZIS */}
+      {viewState === 'playing' && (
+        <>
+          <div className="game-layout">
+            {/* ── BAL OLDAL: LORICATUS VEZÉRLŐPULT ── */}
+            <aside className="loricatus-hud">
+              <LoricatusHUD />
+              <div className="hud-scroll-content">
+                <PlayerStats />
+                <div className="sidebar-card">
+                  <h3>🏘️ Ingatlanjaim</h3>
+                  <PlayerInventory />
+                </div>
+                <CollapsibleEventLog />
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
+                  <HouseRulesPanel />
+                </div>
+              </div>
+              <ResumeBar />
+            </aside>
+
+            {/* ── JOBB OLDAL: DINAMIKUS TÁBLA ── */}
+            <main className="game-board-section">
+              <Board />
+            </main>
           </div>
-          <ResumeBar />
-        </aside>
-        <main className="game-board-section">
-          <Board />
-        </main>
-      </div>
-      <WinnerScreen />
-      <AuctionPanel />
-      <TradeResponseModal />
-      <DebugPanel />
-    </>
+
+          <WinnerScreen />
+          <AuctionPanel />
+          <TradeResponseModal />
+          <DebugPanel />
+        </>
+      )}
+    </div>
   );
 }
+
+// --- SEGÉDKOMPONENSEK (NAPLÓ, INVENTÁR, STB.) ---
 
 function CollapsibleEventLog() {
   const { state } = useGame();
@@ -74,32 +111,23 @@ function CollapsibleEventLog() {
     <div className="sidebar-card">
       <div
         onClick={() => setIsOpen(o => !o)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.8rem',
-          cursor: 'pointer',
-          userSelect: 'none',
-        }}
+        style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}
       >
-        <h3 style={{ margin: 0, whiteSpace: 'nowrap' }}>📋 Napló</h3>
+        <h3 style={{ margin: 0 }}>📋 Napló</h3>
         {!isOpen && lastLog && (
           <AnimatePresence mode="wait">
             <motion.div
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 5 }}
               key={lastLog.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               style={{
                 fontSize: '0.68rem',
                 color: 'var(--text-secondary)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                flex: 1,
-                fontFamily: "'JetBrains Mono', monospace",
-                borderLeft: '1px solid var(--border-muted)',
-                paddingLeft: '0.5rem'
+                paddingLeft: '0.5rem',
+                borderLeft: '1px solid var(--border-muted)'
               }}
             >
               {lastLog.message}
@@ -107,20 +135,13 @@ function CollapsibleEventLog() {
           </AnimatePresence>
         )}
         <span style={{
-          fontSize: '0.8rem',
           color: 'var(--neon)',
+          marginLeft: 'auto',
           transition: 'transform 0.2s',
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          marginLeft: 'auto'
-        }}>
-          ▼
-        </span>
+          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+        }}>▼</span>
       </div>
-      {isOpen && (
-        <div style={{ marginTop: '0.75rem' }}>
-          <EventLog />
-        </div>
-      )}
+      {isOpen && <div style={{ marginTop: '0.75rem' }}><EventLog /></div>}
     </div>
   );
 }
@@ -138,6 +159,7 @@ function PlayerInventory() {
     );
   }
 
+  // Group properties by color group (#48)
   const grouped: Record<string, number[]> = {};
   currentPlayer.properties.forEach((sid: number) => {
     const space = BOARD_SPACES[sid];
@@ -210,6 +232,8 @@ function PlayerInventory() {
   );
 }
 
+// --- FŐ BELÉPÉSI PONT ---
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -235,15 +259,14 @@ function GameWrapper() {
 function ResumeBar() {
   const saved = hasSavedGame();
   if (!saved) return null;
-
   return (
     <div className="resume-bar">
-      <span className="resume-text">Mentett játék betöltve</span>
+      <span className="resume-text">💾 Mentett játék</span>
       <button
         className="resume-btn"
         onClick={() => { clearSave(); window.location.reload(); }}
       >
-        🗑️ Új játék
+        🗑️ Új misszió
       </button>
     </div>
   );
