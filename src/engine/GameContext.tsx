@@ -34,30 +34,34 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    // Firestore Replay — Iratkozás a szoba változásaira
+    // Firestore szinkronizáció
     useEffect(() => {
         if (state.roomId) {
-            console.log(`📡 Kapcsolódás a szobához: ${state.roomId}`);
+            console.log(`📡 [Loricatus] Kapcsolódás a szobához: ${state.roomId}`);
             const unsubscribe = onSnapshot(doc(db, 'games', state.roomId), (snapshot) => {
                 if (snapshot.exists()) {
                     const cloudState = snapshot.data() as GameState;
-                    // Csak akkor szinkronizálunk, ha a fázis vagy a köridő eltér (vagy bármi más kritikus)
+                    // Szinkronizáljuk a felhő állapotát a lokálissal
                     rawDispatch({ type: 'SYNC_STATE', state: cloudState });
                 }
+            }, (error) => {
+                console.error("[Loricatus] Firestore hiba:", error);
             });
             return unsubscribe;
         }
     }, [state.roomId]);
 
-    // Kedvezményes dispatch: Ha MP, akkor Firestore-ba írunk, ha nem, akkor lokálisan
+    // Kedvezményes dispatch: Optimista frissítés + Firestore szinkron
     const dispatch = useCallback<React.Dispatch<GameAction>>((action) => {
+        // 1. Lokális frissítés (Azonnali válasz)
+        rawDispatch(action);
+
+        // 2. Szinkronizálás a felhőbe, ha van aktív szoba
         if (state.roomId) {
             const nextState = gameReducer(state, action);
             setDoc(doc(db, 'games', state.roomId), nextState).catch(e => {
-                console.error("Firestore update hiba:", e);
+                console.error("[Loricatus] Felhő szinkronizációs hiba:", e);
             });
-        } else {
-            rawDispatch(action);
         }
     }, [state]);
 

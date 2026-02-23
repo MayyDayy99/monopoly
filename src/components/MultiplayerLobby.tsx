@@ -27,8 +27,8 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
 
     useEffect(() => {
         signInAnonymously(auth).catch(e => {
-            console.error("Auth hiba:", e);
-            setError("Nem sikerült kapcsolódni a központhoz.");
+            console.error("[Loricatus] Auth hiba:", e);
+            setError("Nem sikerült kapcsolódni a központhoz. Ellenőrizd az internetet!");
         });
 
         const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -45,7 +45,12 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                     const data = snapshot.data();
                     setJoinedUids(data.joinedUids || []);
                     if (data.hostId === user.uid) setIsHost(true);
+
+                    // Ha a játék fázisa megváltozott, az App.tsx useEffectje fogja váltani a nézetet
                 }
+            }, (err) => {
+                console.error("[Loricatus] Lobby snapshot hiba:", err);
+                setError("A szoba adatai nem elérhetőek. Firestore Rules hiba?");
             });
             return unsubscribe;
         }
@@ -103,7 +108,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
             }
 
             const data = docSnap.data();
-            if (data.joinedUids.length >= 4) {
+            if (data.joinedUids && data.joinedUids.length >= 4) {
                 setError("A küldetés már megtelt.");
                 setLoading(false);
                 return;
@@ -126,10 +131,9 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
     const startMission = () => {
         if (!isHost || joinedUids.length < 2) return;
 
-        // Inicializáljuk a játékosokat a joinedUids alapján
         const players = joinedUids.map((uid, idx) => ({
             id: `p${idx + 1}`,
-            name: idx === 0 ? 'Főhadiszállás (Host)' : `Ügynök ${idx + 1}`,
+            name: uid === user?.uid ? 'Főhadiszállás (Én)' : `Ügynök ${idx + 1}`,
             color: ['#c7fe1b', '#0ea5e9', '#e879f9', '#fb923c'][idx],
             token: ['🛰️', '🚁', '📡', '🖥️'][idx],
             isBot: false,
@@ -150,7 +154,8 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         return (
             <div className="setup-container">
                 <div className="setup-card" style={{ textAlign: 'center' }}>
-                    <div className="animate-pulse" style={{ color: 'var(--neon)' }}>Kapcsolódás a Loricatus központhoz...</div>
+                    <div className="animate-pulse" style={{ color: 'var(--neon)' }}>Kapcsolódás a Loricatus hálózathoz...</div>
+                    <p style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Ellenőrizd, hogy a Firebase Anonymous Auth engedélyezve van-e!</p>
                 </div>
             </div>
         );
@@ -166,7 +171,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                     style={{ textAlign: 'center' }}
                 >
                     <h1 className="setup-title" style={{ fontSize: '2.5rem', color: 'var(--neon)' }}>{state.roomId}</h1>
-                    <p className="setup-subtitle">Várakozás a többi ügynökre...</p>
+                    <p className="setup-subtitle">Küldetéskód — Oszd meg a többiekkel!</p>
 
                     <div style={{ margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                         {joinedUids.map((uid, idx) => (
@@ -186,17 +191,6 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 <span style={{ color: 'var(--neon)', fontSize: '0.7rem' }}>KÉSZ</span>
                             </div>
                         ))}
-                        {Array.from({ length: Math.max(0, 2 - joinedUids.length) }).map((_, i) => (
-                            <div key={`empty-${i}`} style={{
-                                padding: '0.75rem',
-                                border: '1px dashed var(--border)',
-                                borderRadius: '8px',
-                                opacity: 0.3,
-                                fontSize: '0.7rem'
-                            }}>
-                                Üres pozíció...
-                            </div>
-                        ))}
                     </div>
 
                     {isHost ? (
@@ -213,6 +207,8 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                             Várakozás a Host indítására...
                         </div>
                     )}
+
+                    {error && <p style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: '1rem' }}>{error}</p>}
                 </motion.div>
             </div>
         );
@@ -228,7 +224,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
                     <img src={logoKicsi} alt="Logo" className="setup-logo" />
                     <h1 className="setup-title">Multiplayer</h1>
-                    <p className="setup-subtitle">Felhőalapú Küldetéskezelés</p>
+                    <p className="setup-subtitle">Loricatus Felhőalapú Kapcsolat</p>
                 </div>
 
                 {error && (
@@ -246,10 +242,10 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                 )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <div className="sidebar-card" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)' }}>
-                        <h3 style={{ color: 'var(--neon)' }}>Új Küldetés</h3>
+                    <div className="sidebar-card">
+                        <h3>Új Küldetés</h3>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Hozz létre egy új szobát és hívd meg barátaidat.
+                            Hozz létre egy új szobát.
                         </p>
                         <button
                             className="btn-primary"
@@ -257,18 +253,18 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                             onClick={createRoom}
                             disabled={loading}
                         >
-                            {loading ? 'Inicializálás...' : '🚀 KÜLDETÉS INDÍTÁSA'}
+                            {loading ? 'Inicializálás...' : '🚀 LÉTREHOZÁS'}
                         </button>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>VAGY</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>VAGY</span>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
-                    <div className="sidebar-card" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)' }}>
-                        <h3 style={{ color: 'var(--cyber)' }}>Csatlakozás</h3>
+                    <div className="sidebar-card">
+                        <h3>Csatlakozás</h3>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                             <input
                                 type="text"
@@ -276,11 +272,10 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 placeholder="LR-XXXX"
                                 value={roomIdInput}
                                 onChange={(e) => setRoomIdInput(e.target.value.toUpperCase())}
-                                style={{ flex: 1, textAlign: 'center', letterSpacing: '2px', fontWeight: 'bold' }}
+                                style={{ flex: 1, textAlign: 'center' }}
                             />
                             <button
                                 className="btn-primary"
-                                style={{ background: 'var(--cyber)', color: 'white' }}
                                 onClick={joinRoom}
                                 disabled={loading || !roomIdInput}
                             >
@@ -288,10 +283,6 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <div style={{ marginTop: '2rem', textAlign: 'center', opacity: 0.5, fontSize: '0.65rem', fontFamily: 'JetBrains Mono' }}>
-                    UID: {user.uid}
                 </div>
             </motion.div>
         </div>

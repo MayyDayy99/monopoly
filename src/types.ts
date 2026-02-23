@@ -198,6 +198,8 @@ export interface GameState {
     totalStepsPending: number;
     targetPosition: number | null;
     roomId?: string | null;
+    hostId?: string | null;
+    joinedUids?: string[];
 }
 
 // ---- Actions ----
