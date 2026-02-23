@@ -88,6 +88,7 @@ export interface Player {
     hasGetOutOfJailCard: number; // count
     isBankrupt: boolean;
     properties: number[]; // spaceId[]
+    uid?: string;         // Firebase UID multiplayerhez
     isBot: boolean;       // P2: AI bot (#73-76)
 }
 
@@ -196,6 +197,7 @@ export interface GameState {
     // --- Új mezők a szekvenciális mozgáshoz (AAA PhysX) ---
     totalStepsPending: number;
     targetPosition: number | null;
+    roomId?: string | null;
 }
 
 // ---- Actions ----
@@ -226,4 +228,5 @@ export type GameAction =
     | { type: 'ADD_LOG'; entry: Omit<LogEntry, 'id' | 'timestamp'> }
     | { type: 'SET_TOKEN_ANIM'; animState: TokenAnimState }
     | { type: 'MOVE_STEP' }
-    | { type: 'MOVE_TELEPORT'; position: number; passedGo?: boolean };
+    | { type: 'MOVE_TELEPORT'; position: number; passedGo?: boolean }
+    | { type: 'SYNC_STATE'; state: GameState };

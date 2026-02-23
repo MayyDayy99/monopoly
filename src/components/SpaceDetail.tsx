@@ -8,12 +8,17 @@ interface SpaceDetailProps {
 }
 
 export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
-    const { state, dispatch } = useGame();
+    const { state, dispatch, localUid } = useGame();
     const isExpired = useTurnTimerExpired();
     const space = BOARD_SPACES[spaceId];
     const owned = state.ownedProperties[spaceId];
     const currentPlayer = state.players[state.currentPlayerIndex];
     const ownerPlayer = owned ? state.players.find(p => p.id === owned.ownerId) : null;
+
+    // Szigorú körvédelem Multiplayer esetén
+    const isMultiplayer = !!state.roomId;
+    const isMyTurn = !isMultiplayer || (currentPlayer?.uid === localUid);
+    const actionDisabled = !isMyTurn;
 
     if (!space) return null;
 
@@ -105,26 +110,27 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                             <button
                                 className="btn-primary"
                                 onClick={() => dispatch({ type: 'BUILD_HOUSE', spaceId })}
-                                disabled={isExpired}
-                                title={isExpired ? "Lejárt az időd!" : ""}
+                                disabled={isExpired || actionDisabled}
+                                title={isExpired ? "Lejárt az időd!" : actionDisabled ? "Döntésre vár..." : ""}
                             >
-                                📊 {isExpired ? '⌛ Idő lejárt' : `LOD Szint telepítése (${space.property?.houseCost}k)`}
+                                📊 {isExpired ? '⌛ Idő lejárt' : actionDisabled ? 'Döntésre vár...' : `LOD Szint telepítése (${space.property?.houseCost}k)`}
                             </button>
                         )}
                         {canBuildHotel(state, currentPlayer.id, spaceId) && (
                             <button
                                 className="btn-primary"
                                 onClick={() => dispatch({ type: 'BUILD_HOTEL', spaceId })}
-                                disabled={isExpired}
-                                title={isExpired ? "Lejárt az időd!" : ""}
+                                disabled={isExpired || actionDisabled}
+                                title={isExpired ? "Lejárt az időd!" : actionDisabled ? "Döntésre vár..." : ""}
                             >
-                                🌐 {isExpired ? '⌛ Idő lejárt' : `Digitális Iker létrehozása (${space.property?.houseCost}k)`}
+                                🌐 {isExpired ? '⌛ Idő lejárt' : actionDisabled ? 'Döntésre vár...' : `Digitális Iker létrehozása (${space.property?.houseCost}k)`}
                             </button>
                         )}
                         {canSellHouse(state, currentPlayer.id, spaceId) && (
                             <button
                                 className="btn-secondary"
                                 onClick={() => dispatch({ type: 'SELL_HOUSE', spaceId })}
+                                disabled={actionDisabled}
                                 style={{ borderColor: '#f87171' }}
                             >
                                 🏚️ LOD Szint eltávolítása (+{Math.floor((space.property?.houseCost || 0) / 2)}k)
@@ -134,7 +140,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                             <button
                                 className="btn-secondary"
                                 onClick={() => dispatch({ type: 'MORTGAGE_PROPERTY', spaceId })}
-                                disabled={isExpired}
+                                disabled={isExpired || actionDisabled}
                                 title={isExpired ? "Lejárt az időd!" : ""}
                             >
                                 🏦 Jelzálogba adás
@@ -144,6 +150,7 @@ export function SpaceDetail({ spaceId, onClose }: SpaceDetailProps) {
                             <button
                                 className="btn-secondary"
                                 onClick={() => dispatch({ type: 'UNMORTGAGE_PROPERTY', spaceId })}
+                                disabled={actionDisabled}
                             >
                                 ✅ Jelzálog kiváltása
                             </button>

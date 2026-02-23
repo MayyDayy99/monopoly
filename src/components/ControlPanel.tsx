@@ -8,10 +8,15 @@ import { Dice } from './Dice';
 import { canRaiseFunds } from '../engine/gameLogic';
 
 export function ControlPanel() {
-    const { state, dispatch } = useGame();
+    const { state, dispatch, localUid } = useGame();
     const isExpired = useTurnTimerExpired();
     const [rolling, setRolling] = useState(false);
     const currentPlayer = state.players[state.currentPlayerIndex];
+
+    // Szigorú körvédelem Multiplayer esetén
+    const isMultiplayer = !!state.roomId;
+    const isMyTurn = !isMultiplayer || (currentPlayer?.uid === localUid);
+    const actionDisabled = !isMyTurn || rolling;
 
     const handleRoll = useCallback(() => {
         if (state.phase !== 'rolling' || rolling) return;
@@ -88,6 +93,7 @@ export function ControlPanel() {
                     <button
                         className="btn-primary blink-urgent"
                         onClick={handleEndTurn}
+                        disabled={actionDisabled}
                         style={{ fontSize: '1rem', padding: '0.7rem' }}
                     >
                         ⏩ Kör átadása
@@ -99,7 +105,7 @@ export function ControlPanel() {
                     <button
                         className="btn-primary"
                         onClick={handleRoll}
-                        disabled={rolling}
+                        disabled={actionDisabled}
                         style={{
                             fontSize: '1rem',
                             padding: '0.7rem',
@@ -110,20 +116,20 @@ export function ControlPanel() {
                         }}
                     >
                         <img src={logoKicsi} alt="" style={{ width: '18px', height: 'auto' }} />
-                        Dobás!
+                        {isMyTurn ? 'Dobás!' : 'Várakozás...'}
                     </button>
                 )}
 
                 {state.phase === 'rolling' && currentPlayer.inJail && !isExpired && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                        <button className="btn-primary" onClick={() => dispatch({ type: 'TRY_JAIL_DOUBLES' })} disabled={rolling}>
+                        <button className="btn-primary" onClick={() => dispatch({ type: 'TRY_JAIL_DOUBLES' })} disabled={actionDisabled}>
                             🎲 Dupla próbálkozás
                         </button>
-                        <button className="btn-secondary" onClick={handlePayFine} disabled={rolling || currentPlayer.money < 50}>
+                        <button className="btn-secondary" onClick={handlePayFine} disabled={actionDisabled || currentPlayer.money < 50}>
                             💰 Bírság fizetése (50k)
                         </button>
                         {currentPlayer.hasGetOutOfJailCard > 0 && (
-                            <button className="btn-secondary" onClick={handleUseJailCard} disabled={rolling}>
+                            <button className="btn-secondary" onClick={handleUseJailCard} disabled={actionDisabled}>
                                 🃏 Kártya használata
                             </button>
                         )}
@@ -136,13 +142,14 @@ export function ControlPanel() {
                         <button
                             className="btn-primary"
                             onClick={handleBuy}
-                            disabled={!canAfford}
+                            disabled={actionDisabled || !canAfford}
                         >
-                            🏠 Megveszi: {currentSpace.name} ({price}k)
+                            🏠 {isMyTurn ? `Megveszi: ${currentSpace.name} (${price}k)` : 'Döntésre vár...'}
                         </button>
                         <button
                             className="btn-secondary"
                             onClick={() => dispatch({ type: 'DECLINE_PROPERTY' })}
+                            disabled={actionDisabled}
                         >
                             🔨 Nem veszi meg (Árverés)
                         </button>
@@ -177,7 +184,7 @@ export function ControlPanel() {
                         <p style={{ fontSize: '0.8rem', lineHeight: 1.4, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
                             {state.drawnCard.text}
                         </p>
-                        <button className="btn-primary" onClick={handleResolveCard}>
+                        <button className="btn-primary" onClick={handleResolveCard} disabled={actionDisabled}>
                             Rendben
                         </button>
                     </motion.div>
@@ -193,7 +200,7 @@ export function ControlPanel() {
                                         <p style={{ fontSize: '0.75rem', color: '#fca5a5', marginBottom: '0.4rem' }}>
                                             Rendezd a tartozásodat eladással vagy jelzáloggal!
                                         </p>
-                                        <button className="btn-danger" style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }}>
+                                        <button className="btn-danger" style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }} disabled={true}>
                                             ▶️ Tartozás fennáll
                                         </button>
                                     </div>
@@ -202,6 +209,7 @@ export function ControlPanel() {
                                         className="btn-danger animate-pulse"
                                         onClick={() => dispatch({ type: 'DECLARE_BANKRUPTCY' })}
                                         style={{ background: '#b91c1c' }}
+                                        disabled={actionDisabled}
                                     >
                                         💥 Csőd bejelentése
                                     </button>
@@ -211,11 +219,12 @@ export function ControlPanel() {
                             <button
                                 className={`btn-primary ${isExpired ? 'blink-urgent' : 'animate-pulse-gold'}`}
                                 onClick={handleEndTurn}
+                                disabled={actionDisabled}
                             >
                                 ⏩ Kör átadása
                             </button>
                         )}
-                        {!isExpired && <TradeModal disabled={isExpired} />}
+                        {!isExpired && <TradeModal disabled={actionDisabled} />}
                     </>
                 )}
 

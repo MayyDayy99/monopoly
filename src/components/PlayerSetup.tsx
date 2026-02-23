@@ -19,9 +19,10 @@ const BOT_NAMES = ['Drón-AI 🤖', 'ScanBot 🤖', 'LiDAR-AI 🤖', 'AvataBot �
 
 interface PlayerSetupProps {
     onStart: (players: PlayerConfig[]) => void;
+    onMultiplayerClick: () => void;
 }
 
-export function PlayerSetup({ onStart }: PlayerSetupProps) {
+export function PlayerSetup({ onStart, onMultiplayerClick }: PlayerSetupProps) {
     const [playerCount, setPlayerCount] = useState(2);
     const [showBotHint, setShowBotHint] = useState(true);
     const [hoveredBotBtn, setHoveredBotBtn] = useState<number | null>(null);
@@ -245,16 +246,28 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                     <HouseRulesPanel />
                 </div>
 
-                {/* Start Button */}
-                <motion.button
-                    className="btn-primary setup-start-btn"
-                    onClick={() => onStart(players.slice(0, playerCount))}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                >
-                    <img src={logoKicsi} alt="" />
-                    Játék indítása!
-                </motion.button>
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <motion.button
+                        className="btn-primary setup-start-btn"
+                        onClick={() => onStart(players.slice(0, playerCount))}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <img src={logoKicsi} alt="" />
+                        Lokális Játék!
+                    </motion.button>
+
+                    <motion.button
+                        className="btn-secondary"
+                        onClick={onMultiplayerClick}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{ padding: '0.75rem', fontSize: '0.85rem', fontWeight: 'bold', letterSpacing: '0.05em', border: '1px solid var(--cyber)' }}
+                    >
+                        📡 Felhőalapú Multiplayer
+                    </motion.button>
+                </div>
 
                 <p style={{
                     textAlign: 'center',

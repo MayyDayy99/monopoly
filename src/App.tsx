@@ -19,18 +19,44 @@ import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
 import { clearSave, hasSavedGame } from './engine/storage';
 
+import { MultiplayerLobby } from './components/MultiplayerLobby';
+
 function GameContent() {
-  const { state, dispatch } = useGame();
+  const { state, dispatch, localUid } = useGame();
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
 
   // P2: Auto-play bot turns (#73)
   useBotPlayer();
 
   const handleStart = useCallback((players: { id: string; name: string; color: string; token: string; isBot: boolean }[]) => {
-    dispatch({ type: 'START_GAME', players });
-  }, [dispatch]);
+    // Add UID to the local player if it's a multiplayer game
+    const playersWithUid = players.map((p, idx) => {
+      if (isMultiplayer && idx === 0 && localUid) {
+        return { ...p, uid: localUid };
+      }
+      return p;
+    });
+    dispatch({ type: 'START_GAME', players: playersWithUid });
+  }, [dispatch, isMultiplayer, localUid]);
 
-  if (state.phase === 'setup') {
-    return <PlayerSetup onStart={handleStart} />;
+  const handleGameJoined = useCallback((roomId: string) => {
+    dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
+    setIsMultiplayer(true);
+  }, [dispatch, state]);
+
+  // Ha még nincs szoba kiválasztva és nem mentett játékkal indulunk,
+  // akkor választási lehetőséget adunk: Single vagy Multi
+  if (state.phase === 'setup' && !state.roomId && !isMultiplayer) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <PlayerSetup onStart={handleStart} onMultiplayerClick={() => setIsMultiplayer(true)} />
+      </div>
+    );
+  }
+
+  // Lobby fázis a Firebase-hez
+  if (isMultiplayer && state.phase === 'setup' && state.roomId) {
+    return <MultiplayerLobby onGameJoined={handleGameJoined} />;
   }
 
   return (

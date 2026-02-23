@@ -48,10 +48,17 @@ export function useTurnTimerExpired() {
  * lépteti a bábut, amíg el nem fogy a pending Steps.
  */
 export function useAsyncMovement() {
-    const { state, dispatch } = useGame();
+    const { state, dispatch, localUid } = useGame();
     const [isMoving, setIsMoving] = useState(false);
 
     useEffect(() => {
+        const cp = state.players[state.currentPlayerIndex];
+        const isMyTurn = !state.roomId || (cp?.uid === localUid);
+
+        // Multiplayer esetén csak az aktuális játékos indítja el a mozgási szekvenciát,
+        // a többiek csak passzívan figyelik a Firestore-ból érkező állapoti változásokat.
+        if (!isMyTurn) return;
+
         const hasPendingSteps = state.totalStepsPending > 0;
         const hasTargetPos = state.targetPosition !== null && state.targetPosition !== state.players[state.currentPlayerIndex]?.position;
 
@@ -71,7 +78,7 @@ export function useAsyncMovement() {
                     }
                 } else if (hasTargetPos) {
                     const cp = state.players[state.currentPlayerIndex];
-                    let current = cp.position;
+                    let current = cp?.position || 0;
                     const target = state.targetPosition!;
                     while (current !== target) {
                         dispatch({ type: 'MOVE_STEP' });
@@ -83,7 +90,7 @@ export function useAsyncMovement() {
             };
             runMovement();
         }
-    }, [state.phase, state.totalStepsPending, state.targetPosition, isMoving, dispatch]);
+    }, [state.phase, state.totalStepsPending, state.targetPosition, isMoving, dispatch, state.roomId, state.currentPlayerIndex, localUid]);
 }
 
 /**
@@ -92,9 +99,13 @@ export function useAsyncMovement() {
  * ACTION → IDLE 2s után (a szkenneranimáció ideje)
  */
 export function useTokenAnimReset() {
-    const { state, dispatch } = useGame();
+    const { state, dispatch, localUid } = useGame();
 
     useEffect(() => {
+        const cp = state.players[state.currentPlayerIndex];
+        const isMyTurn = !state.roomId || (cp?.uid === localUid);
+        if (!isMyTurn) return; // Csak az aktuális játékos resetelhet, hogy ne legyen loop
+
         if (state.tokenAnimState === 'MOVING') {
             const timeout = setTimeout(() => {
                 dispatch({ type: 'SET_TOKEN_ANIM', animState: 'IDLE' });
@@ -107,5 +118,5 @@ export function useTokenAnimReset() {
             }, 2000);
             return () => clearTimeout(timeout);
         }
-    }, [state.tokenAnimState, dispatch]);
+    }, [state.tokenAnimState, dispatch, state.roomId, localUid, state.currentPlayerIndex]);
 }

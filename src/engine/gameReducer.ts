@@ -59,6 +59,10 @@ export function createInitialState(): GameState {
 export function gameReducer(state: GameState, action: GameAction): GameState {
     switch (action.type) {
 
+        case 'SYNC_STATE': {
+            return { ...action.state };
+        }
+
         // ──────────────────────────── START GAME ────────────────────────────
         case 'START_GAME': {
             const currentRules = state.houseRules;
