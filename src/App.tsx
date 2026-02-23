@@ -1,5 +1,5 @@
 // ============================================================
-// LORICATUS PRIME ARCHITECT - APP ENTRY POINT
+// LORICATUS PRIME ARCHITECT - APP ENTRY POINT (Final Fix)
 // Szigorú nézet-kikényszerítés és Firebase integráció
 // ============================================================
 
@@ -23,51 +23,56 @@ import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
 import { clearSave, hasSavedGame } from './engine/storage';
 
-// Firebase modul és Lobby importálása
+// Loricatus Lobby komponens importálása
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 
 /**
- * GameContent: A fő renderelési logika, amely kezeli a Lobby és Board közötti váltást.
+ * GameContent: A fő renderelési logika a kért fokozott állapotkezeléssel.
  */
 function GameContent() {
   const { state, dispatch } = useGame();
 
-  // Szigorú React State kikényszerítés a nézetváltáshoz
-  const [viewState, setViewState] = useState<'lobby' | 'playing'>('lobby');
+  // A felhasználó által kért változónevek használata a szigorú state-kikényszerítéshez
+  const [gameState, setGameState] = useState<'lobby' | 'playing'>('lobby');
   const [roomData, setRoomData] = useState<string | null>(null);
 
-  // Bot logika aktiválása
+  // Bot automatizáció aktiválása
   useBotPlayer();
 
-  // Szinkronizáció: Ha a játék már tart (pl. frissítés után), ugorjunk a board-ra
+  // SZINKRONIZÁCIÓ: Ha a Firebase state.phase átvált (setup -> rolling), 
+  // akkor váltunk át a játéktábla nézetre. Ez kezeli az oldal újratöltést is.
   useEffect(() => {
     if (state.phase !== 'setup' && state.roomId) {
-      setViewState('playing');
+      setGameState('playing');
       setRoomData(state.roomId);
+    } else {
+      setGameState('lobby');
     }
   }, [state.phase, state.roomId]);
 
   // Csatlakozás eseménykezelő
-  const handleGameJoined = useCallback((roomId: string, playerUid: string) => {
-    console.log(`[Loricatus] Csatlakozva a szobához: ${roomId}`);
+  const handleGameJoined = useCallback((roomId: string) => {
+    console.log(`[Loricatus] Küldetés kód rögzítve: ${roomId}`);
     setRoomData(roomId);
     dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
-    // Megjegyzés: A tényleges váltást a state.phase váltása fogja triggerelni a START_GAME után a useEffect-ben.
   }, [dispatch, state]);
 
   return (
-    <div id="app-container" style={{ width: '100%', height: '100dvh', overflow: 'hidden' }}>
+    <div
+      id="app-container"
+      data-room-id={roomData}
+      style={{ width: '100%', height: '100dvh', overflow: 'hidden' }}
+    >
 
-      {/* 1. LOBBY (Váróterem) FÁZIS */}
-      {viewState === 'lobby' && (
+      {/* ── 1. NÉZET: VÁRÓTEREM (LOBBY) ── */}
+      {gameState === 'lobby' && (
         <MultiplayerLobby onGameJoined={handleGameJoined} />
       )}
 
-      {/* 2. PLAYING (Játéktábla) FÁZIS */}
-      {viewState === 'playing' && (
+      {/* ── 2. NÉZET: JÁTÉKTÁBLA (PLAYING) ── */}
+      {gameState === 'playing' && (
         <>
           <div className="game-layout">
-            {/* ── BAL OLDAL: LORICATUS VEZÉRLŐPULT ── */}
             <aside className="loricatus-hud">
               <LoricatusHUD />
               <div className="hud-scroll-content">
@@ -84,7 +89,6 @@ function GameContent() {
               <ResumeBar />
             </aside>
 
-            {/* ── JOBB OLDAL: DINAMIKUS TÁBLA ── */}
             <main className="game-board-section">
               <Board />
             </main>
@@ -100,7 +104,7 @@ function GameContent() {
   );
 }
 
-// --- SEGÉDKOMPONENSEK (NAPLÓ, INVENTÁR, STB.) ---
+// --- SEGÉDKOMPONENSEK ---
 
 function CollapsibleEventLog() {
   const { state } = useGame();
@@ -126,20 +130,16 @@ function CollapsibleEventLog() {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                paddingLeft: '0.5rem',
-                borderLeft: '1px solid var(--border-muted)'
+                paddingLeft: '0.4rem',
+                borderLeft: '1px solid var(--border-muted)',
+                flex: 1
               }}
             >
               {lastLog.message}
             </motion.div>
           </AnimatePresence>
         )}
-        <span style={{
-          color: 'var(--neon)',
-          marginLeft: 'auto',
-          transition: 'transform 0.2s',
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-        }}>▼</span>
+        <span style={{ color: 'var(--neon)', marginLeft: 'auto', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
       </div>
       {isOpen && <div style={{ marginTop: '0.75rem' }}><EventLog /></div>}
     </div>
@@ -152,14 +152,9 @@ function PlayerInventory() {
   if (!currentPlayer) return null;
 
   if (currentPlayer.properties.length === 0) {
-    return (
-      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontStyle: 'italic' }}>
-        Még nincs ingatlanod.
-      </div>
-    );
+    return <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontStyle: 'italic' }}>Üres.</div>;
   }
 
-  // Group properties by color group (#48)
   const grouped: Record<string, number[]> = {};
   currentPlayer.properties.forEach((sid: number) => {
     const space = BOARD_SPACES[sid];
@@ -170,7 +165,7 @@ function PlayerInventory() {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
       {Object.entries(grouped).map(([group, sids]) => {
         const groupColor = COLOR_GROUP_COLORS[group as ColorGroup] || '#888';
         const isCompleteGroup = COLOR_GROUPS[group]
@@ -179,52 +174,15 @@ function PlayerInventory() {
 
         return (
           <div key={group}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.3rem',
-              marginBottom: '0.2rem',
-            }}>
-              <div style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '2px',
-                background: groupColor,
-              }} />
-              <span style={{
-                fontSize: '0.65rem',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                fontWeight: isCompleteGroup ? 700 : 400,
-              }}>
-                {group}
-                {isCompleteGroup && ' ★'}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '1px', background: groupColor }} />
+              <span style={{ fontSize: '0.65rem', fontWeight: isCompleteGroup ? 700 : 400 }}>{group}</span>
             </div>
-            {sids.map(sid => {
-              const space = BOARD_SPACES[sid];
-              const owned = state.ownedProperties[sid];
-              return (
-                <div
-                  key={sid}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.2rem 0.4rem',
-                    paddingLeft: '0.8rem',
-                    fontSize: '0.72rem',
-                    opacity: owned?.isMortgaged ? 0.5 : 1,
-                  }}
-                >
-                  <span style={{ flex: 1, fontWeight: 500 }}>{space.name}</span>
-                  {owned?.hasHotel && <span>🏨</span>}
-                  {!owned?.hasHotel && owned && owned.houses > 0 && <span>🏠×{owned.houses}</span>}
-                  {owned?.isMortgaged && <span style={{ color: '#f87171', fontSize: '0.6rem' }}>JLZ</span>}
-                </div>
-              );
-            })}
+            {sids.map(sid => (
+              <div key={sid} style={{ fontSize: '0.7rem', paddingLeft: '0.8rem', opacity: state.ownedProperties[sid]?.isMortgaged ? 0.5 : 1 }}>
+                {BOARD_SPACES[sid].name}
+              </div>
+            ))}
           </div>
         );
       })}
@@ -232,7 +190,7 @@ function PlayerInventory() {
   );
 }
 
-// --- FŐ BELÉPÉSI PONT ---
+// --- ENTRY ---
 
 export default function App() {
   return (
@@ -247,7 +205,6 @@ export default function App() {
 function GameWrapper() {
   const { state } = useGame();
   const gameStarted = state.phase !== 'setup';
-
   return (
     <>
       <OrientationOverlay gameStarted={gameStarted} />
@@ -261,13 +218,8 @@ function ResumeBar() {
   if (!saved) return null;
   return (
     <div className="resume-bar">
-      <span className="resume-text">💾 Mentett játék</span>
-      <button
-        className="resume-btn"
-        onClick={() => { clearSave(); window.location.reload(); }}
-      >
-        🗑️ Új misszió
-      </button>
+      <span>💾 Mentett állapot</span>
+      <button className="resume-btn" onClick={() => { clearSave(); window.location.reload(); }}>🗑️ Törlés</button>
     </div>
   );
 }
