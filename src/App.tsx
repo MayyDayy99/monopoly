@@ -21,7 +21,6 @@ import { OrientationOverlay } from './components/OrientationOverlay';
 import { useBotPlayer } from './engine/useBotPlayer';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
-import { clearSave, hasSavedGame } from './engine/storage';
 
 // Loricatus Lobby komponens importálása
 import { MultiplayerLobby } from './components/MultiplayerLobby';
@@ -86,7 +85,6 @@ function GameContent() {
                   <HouseRulesPanel />
                 </div>
               </div>
-              <ResumeBar />
             </aside>
 
             <main className="game-board-section">
@@ -210,16 +208,5 @@ function GameWrapper() {
       <OrientationOverlay gameStarted={gameStarted} />
       <GameContent />
     </>
-  );
-}
-
-function ResumeBar() {
-  const saved = hasSavedGame();
-  if (!saved) return null;
-  return (
-    <div className="resume-bar">
-      <span>💾 Mentett állapot</span>
-      <button className="resume-btn" onClick={() => { clearSave(); window.location.reload(); }}>🗑️ Törlés</button>
-    </div>
   );
 }
