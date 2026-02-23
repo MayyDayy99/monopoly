@@ -72,7 +72,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
                         </svg>
                     </button>
-                    <img src={logoKicsi} alt="Loricatus Logo" style={{ width: '80px', height: 'auto' }} />
+                    <img src={logoKicsi} alt="Loricatus Logo" className="setup-logo" />
                 </div>
                 <h1 className="setup-title">Monopoly by Loricatus</h1>
                 <div className="setup-subtitle">Magyar Műemlékek • 3D Digitalizációs Társasjáték</div>
@@ -131,13 +131,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 </AnimatePresence>
 
                 {/* Player Inputs - Scrollable if many players */}
-                <div className="setup-players-list" style={{
-                    maxHeight: '38vh',
-                    overflowY: 'auto',
-                    overflowX: 'hidden', // Prevent horizontal scroll from tooltips
-                    paddingRight: '0.5rem',
-                    marginBottom: '1rem'
-                }}>
+                <div className="setup-players-list">
                     {Array.from({ length: playerCount }).map((_, i) => (
                         <motion.div
                             key={i}
@@ -253,23 +247,12 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
 
                 {/* Start Button */}
                 <motion.button
-                    className="btn-primary"
+                    className="btn-primary setup-start-btn"
                     onClick={() => onStart(players.slice(0, playerCount))}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    style={{
-                        width: '100%',
-                        marginTop: '0.75rem',
-                        padding: '0.8rem',
-                        fontSize: '1.1rem',
-                        letterSpacing: '0.05em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.6rem'
-                    }}
                 >
-                    <img src={logoKicsi} alt="" style={{ width: '20px', height: 'auto' }} />
+                    <img src={logoKicsi} alt="" />
                     Játék indítása!
                 </motion.button>
 

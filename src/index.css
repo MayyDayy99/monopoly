@@ -679,10 +679,10 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(199, 254, 27, 0.2);
   border-radius: 20px;
-  padding: 1.25rem;
-  max-width: 440px;
-  width: 100%;
-  max-height: none;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 95%;
+  max-height: 90vh;
   /* Eltávolítjuk a fix korlátot, hogy görgethető legyen */
   display: flex;
   flex-direction: column;
@@ -692,6 +692,37 @@ body {
   margin: auto;
   overflow: visible;
   /* Engedjük a belső elemeknek a természetes méretet */
+}
+
+.setup-players-list {
+  max-height: 48vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.setup-logo {
+  width: 80px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.setup-start-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.setup-start-btn img {
+  width: 24px;
+  height: auto;
 }
 
 @media (max-width: 480px) {
@@ -740,6 +771,55 @@ body {
   .btn-primary {
     padding: 0.7rem !important;
     font-size: 1rem !important;
+  }
+}
+
+/* Desktop optimization for setup */
+@media (min-width: 1024px) {
+  .setup-card {
+    max-width: 650px;
+    padding: 3rem;
+    border-radius: 32px;
+  }
+
+  .setup-title {
+    font-size: 3.2rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .setup-subtitle {
+    font-size: 0.9rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .setup-players-list {
+    max-height: 45vh !important;
+    padding-right: 1rem !important;
+  }
+
+  .setup-players-list>div {
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .setup-input {
+    padding: 0.8rem 1.2rem !important;
+    font-size: 1rem !important;
+  }
+
+  .btn-primary {
+    padding: 1.2rem !important;
+    font-size: 1.2rem !important;
+    border-radius: 12px !important;
+  }
+
+  .setup-logo {
+    width: 120px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .setup-start-btn img {
+    width: 32px !important;
   }
 }
 
