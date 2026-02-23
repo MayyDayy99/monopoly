@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameProvider } from './engine/GameContext';
 import { useGame } from './engine/GameHooks';
-import { PlayerSetup } from './components/PlayerSetup';
 import { Board } from './components/Board';
 import { PlayerStats } from './components/PlayerStats';
 import { WinnerScreen } from './components/WinnerScreen';
@@ -22,74 +21,42 @@ import { clearSave, hasSavedGame } from './engine/storage';
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 
 function GameContent() {
-  const { state, dispatch, localUid } = useGame();
-  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  const { state, dispatch } = useGame();
 
   // P2: Auto-play bot turns (#73)
   useBotPlayer();
 
-  const handleStart = useCallback((players: { id: string; name: string; color: string; token: string; isBot: boolean }[]) => {
-    // Add UID to the local player if it's a multiplayer game
-    const playersWithUid = players.map((p, idx) => {
-      if (isMultiplayer && idx === 0 && localUid) {
-        return { ...p, uid: localUid };
-      }
-      return p;
-    });
-    dispatch({ type: 'START_GAME', players: playersWithUid });
-  }, [dispatch, isMultiplayer, localUid]);
-
   const handleGameJoined = useCallback((roomId: string) => {
     dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
-    setIsMultiplayer(true);
   }, [dispatch, state]);
 
-  // Ha még nincs szoba kiválasztva és nem mentett játékkal indulunk,
-  // akkor választási lehetőséget adunk: Single vagy Multi
-  if (state.phase === 'setup' && !state.roomId && !isMultiplayer) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        <PlayerSetup onStart={handleStart} onMultiplayerClick={() => setIsMultiplayer(true)} />
-      </div>
-    );
-  }
-
-  // Lobby fázis a Firebase-hez
-  if (isMultiplayer && state.phase === 'setup' && state.roomId) {
+  // Induláskor KIZÁRÓLAG a Lobby (szobaválasztó vagy várakozó) látható
+  if (state.phase === 'setup') {
     return <MultiplayerLobby onGameJoined={handleGameJoined} />;
   }
 
   return (
     <>
       <div className="game-layout">
-        {/* ── BAL OLDAL: LORICATUS VEZÉRLŐPULT (400px) ── */}
         <aside className="loricatus-hud">
           <LoricatusHUD />
-
           <div className="hud-scroll-content">
             <PlayerStats />
-
             <div className="sidebar-card">
               <h3>🏘️ Ingatlanjaim</h3>
               <PlayerInventory />
             </div>
-
             <CollapsibleEventLog />
-
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
               <HouseRulesPanel />
             </div>
           </div>
-
           <ResumeBar />
         </aside>
-
-        {/* ── JOBB OLDAL: DINAMIKUS TÁBLA KONTÉNER ── */}
         <main className="game-board-section">
           <Board />
         </main>
       </div>
-
       <WinnerScreen />
       <AuctionPanel />
       <TradeResponseModal />
@@ -171,7 +138,6 @@ function PlayerInventory() {
     );
   }
 
-  // Group properties by color group (#48)
   const grouped: Record<string, number[]> = {};
   currentPlayer.properties.forEach((sid: number) => {
     const space = BOARD_SPACES[sid];
@@ -266,16 +232,13 @@ function GameWrapper() {
   );
 }
 
-/** Shows a "continue game" bar if there's a saved game on fresh load */
 function ResumeBar() {
-  // This only runs once at mount — if there's a saved game it was auto-loaded by context
-  // We show a discard option
   const saved = hasSavedGame();
   if (!saved) return null;
 
   return (
     <div className="resume-bar">
-      <span className="resume-text">💾 Mentett játék betöltve</span>
+      <span className="resume-text">Mentett játék betöltve</span>
       <button
         className="resume-btn"
         onClick={() => { clearSave(); window.location.reload(); }}

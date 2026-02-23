@@ -13,7 +13,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     const [state, rawDispatch] = useReducer(gameReducer, undefined, () => {
         const saved = loadGame();
-        if (saved && saved.phase !== 'setup' && !saved.roomId) { // Csak akkor töltsük be a mentést, ha nem multiplayer
+        if (saved) {
             const initial = createInitialState();
             return {
                 ...initial,
@@ -52,12 +52,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Kedvezményes dispatch: Ha MP, akkor Firestore-ba írunk, ha nem, akkor lokálisan
     const dispatch = useCallback<React.Dispatch<GameAction>>((action) => {
         if (state.roomId) {
-            // Szigorú körvédelem: Csak az aktuális játékos hajthat végre akciókat a Firestore-ban
-            // Kivétel: START_GAME és SYNC_STATE (vagy rendszerlogok)
-            // De az egyszerűség kedvéért a UI-ban tiltjuk le a gombokat.
-
             const nextState = gameReducer(state, action);
-            // Ha ez egy MP szoba, akkor minden akciót a felhőbe küldünk
             setDoc(doc(db, 'games', state.roomId), nextState).catch(e => {
                 console.error("Firestore update hiba:", e);
             });
@@ -66,9 +61,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
     }, [state]);
 
-    // Auto-save state to LocalStorage (csak single player esetén)
+    // Auto-save state to LocalStorage
     useEffect(() => {
-        if (state.phase !== 'setup' && !state.roomId) {
+        if (state.phase !== 'setup' || state.roomId) {
             saveGame(state);
         }
     }, [state]);
