@@ -132,6 +132,7 @@ body {
   box-shadow:
     var(--shadow-glow),
     inset 0 0 80px rgba(0, 0, 0, 0.4);
+  background-color: var(--bg-board) !important;
 }
 
 /* ============================================================
@@ -193,8 +194,8 @@ body {
 
 .board-space .space-name {
   font-family: 'Inter', sans-serif;
-  font-size: 0.45rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-align: center;
   line-height: 1.1;
   color: var(--text-primary);
@@ -202,7 +203,7 @@ body {
   padding: 1px 2px;
   word-break: break-word;
   hyphens: auto;
-  letter-spacing: 0.01em;
+  letter-spacing: 0em;
 }
 
 .board-space .space-price {
@@ -220,8 +221,8 @@ body {
 }
 
 .board-space.corner .space-name {
-  font-size: 0.5rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 800;
   color: var(--neon);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -672,8 +673,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  padding-bottom: 3rem;
-  /* Extra hely az alján a görgetéshez */
+  padding-bottom: 1rem;
+  /* Reduced for compactness */
   background: transparent;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1662,7 +1663,7 @@ body {
 
   /* Mezők belső skálázása dinamikus viewport egységekkel */
   .board-space .space-name {
-    font-size: 1.6vw !important;
+    font-size: 1.4vw !important;
     padding: 0 1px !important;
     line-height: 1.05 !important;
   }

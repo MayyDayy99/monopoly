@@ -297,10 +297,10 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 className="setup-card"
             >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
-                    <img src={logoKicsi} alt="Logo" className="setup-logo" />
-                    <h1 className="setup-title">Monopoly by Loricatus</h1>
-                    <p className="setup-subtitle">Repül, Rögzít, Segít</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1rem' }}>
+                    <img src={logoKicsi} alt="Logo" className="setup-logo" style={{ width: '60px' }} />
+                    <h2 className="setup-title" style={{ fontSize: '1.4rem' }}>Monopoly by Loricatus</h2>
+                    <p className="setup-subtitle" style={{ marginBottom: '0.5rem' }}>Repül, Rögzít, Segít</p>
                 </div>
 
                 {error && (
@@ -317,15 +317,15 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                     </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div className="sidebar-card">
                         <h3>Új Küldetés</h3>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                             Hozz létre egy új szobát.
                         </p>
                         <button
                             className="btn-primary"
-                            style={{ width: '100%' }}
+                            style={{ width: '100%', padding: '0.6rem' }}
                             onClick={createRoom}
                             disabled={loading}
                         >
@@ -333,50 +333,50 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>VAGY</span>
+                        <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>VAGY</span>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
                     <div className="sidebar-card">
                         <h3>Csatlakozás</h3>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            <div className="setup-input" style={{ flex: 3, display: 'flex', alignItems: 'center', padding: '0', overflow: 'hidden' }}>
-                                <span style={{ padding: '0.75rem 0.5rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderRight: '1px solid var(--border)', fontFamily: 'JetBrains Mono', fontSize: '0.9rem' }}>LR-</span>
+                            <div className="setup-input" style={{ flex: 3, display: 'flex', alignItems: 'center', padding: '0', overflow: 'hidden', height: '38px' }}>
+                                <span style={{ padding: '0 0.5rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderRight: '1px solid var(--border)', fontFamily: 'JetBrains Mono', fontSize: '0.8rem', height: '100%', display: 'flex', alignItems: 'center' }}>LR-</span>
                                 <input
                                     type="text"
                                     placeholder="XXXX"
                                     value={roomIdInput}
                                     onChange={(e) => setRoomIdInput(e.target.value.toUpperCase().replace(/LR-/i, ''))}
-                                    style={{ flex: 1, textAlign: 'center', minWidth: 0, padding: '0.75rem 0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontSize: '0.9rem' }}
+                                    style={{ flex: 1, textAlign: 'center', minWidth: 0, padding: '0 0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', height: '100%' }}
                                 />
                             </div>
                             <button
                                 className="btn-primary"
                                 onClick={joinRoom}
                                 disabled={loading || !roomIdInput}
-                                style={{ flex: 1, padding: '0.75rem 0', minWidth: '80px', fontSize: '0.8rem' }}
+                                style={{ flex: 1, padding: '0', height: '38px', minWidth: '70px', fontSize: '0.75rem' }}
                             >
                                 {loading ? '...' : 'BELÉPÉS'}
                             </button>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>OFFLINE</span>
+                        <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>OFFLINE</span>
                         <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     </div>
 
                     <div className="sidebar-card">
                         <h3>Lokális Játék</h3>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                             Játssz helyben a beépített intelligencia ellen!
                         </p>
                         <button
                             className="btn-primary"
-                            style={{ width: '100%', background: 'var(--text-secondary)', color: '#000' }}
+                            style={{ width: '100%', padding: '0.6rem', background: 'var(--text-secondary)', color: '#000' }}
                             onClick={startLocalGame}
                         >
                             LOKÁLIS JÁTÉK INDÍTÁSA
