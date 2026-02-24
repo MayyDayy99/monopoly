@@ -24,6 +24,8 @@ import type { ColorGroup } from './types';
 
 // Loricatus Lobby komponens importálása
 import { MultiplayerLobby } from './components/MultiplayerLobby';
+import { clearSave } from './engine/storage';
+import { createInitialState } from './engine/gameReducer';
 
 /**
  * GameContent: A fő renderelési logika a kért fokozott állapotkezeléssel.
@@ -41,9 +43,9 @@ function GameContent() {
   // SZINKRONIZÁCIÓ: Ha a Firebase state.phase átvált (setup -> rolling), 
   // akkor váltunk át a játéktábla nézetre. Ez kezeli az oldal újratöltést is.
   useEffect(() => {
-    if (state.phase !== 'setup' && state.roomId) {
+    if (state.phase !== 'setup') {
       setGameState('playing');
-      setRoomData(state.roomId);
+      setRoomData(state.roomId || null);
     } else {
       setGameState('lobby');
     }
@@ -51,9 +53,13 @@ function GameContent() {
 
   // Csatlakozás eseménykezelő
   const handleGameJoined = useCallback((roomId: string) => {
-    console.log(`[Loricatus] Küldetés kód rögzítve: ${roomId}`);
-    setRoomData(roomId);
-    dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
+    if (roomId) {
+      console.log(`[Loricatus] Küldetés kód rögzítve: ${roomId}`);
+      dispatch({ type: 'SYNC_STATE', state: { ...state, roomId } });
+    } else {
+      console.log(`[Loricatus] Lokális játék indítása`);
+    }
+    setRoomData(roomId || null);
   }, [dispatch, state]);
 
   return (
@@ -81,8 +87,9 @@ function GameContent() {
                   <PlayerInventory />
                 </div>
                 <CollapsibleEventLog />
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', paddingBottom: '2rem', gap: '0.5rem', flexDirection: 'column', alignItems: 'center' }}>
                   <HouseRulesPanel />
+                  <LeaveGameButton />
                 </div>
               </div>
             </aside>
@@ -141,6 +148,35 @@ function CollapsibleEventLog() {
       </div>
       {isOpen && <div style={{ marginTop: '0.75rem' }}><EventLog /></div>}
     </div>
+  );
+}
+
+function LeaveGameButton() {
+  const { dispatch } = useGame();
+
+  const handleLeave = () => {
+    if (confirm('Biztosan ki akarsz lépni a játékból? A jelenlegi állapotod törlődik.')) {
+      clearSave();
+      dispatch({ type: 'SYNC_STATE', state: createInitialState() });
+      window.location.reload();
+    }
+  };
+
+  return (
+    <button
+      onClick={handleLeave}
+      style={{
+        background: 'transparent',
+        border: '1px solid #ef4444',
+        color: '#ef4444',
+        padding: '0.3rem 0.6rem',
+        borderRadius: '8px',
+        fontSize: '0.75rem',
+        cursor: 'pointer',
+      }}
+    >
+      🚪 Kilépés a játékból
+    </button>
   );
 }
 

@@ -11,6 +11,7 @@ import { useGame } from '../engine/GameHooks';
 import { createInitialState } from '../engine/gameReducer';
 import { motion } from 'framer-motion';
 import logoKicsi from '../assets/logo_kicsi.png';
+import { clearSave } from '../engine/storage';
 
 interface LobbyProps {
     onGameJoined: (roomId: string, playerUid: string) => void;
@@ -82,7 +83,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                 joinedUids: [user.uid],
                 phase: 'setup',
             };
-            
+
             console.log("[Loricatus] Mentés a Firestore-ba: ", newId);
             await setDoc(doc(db, 'games', newId), gameData);
             console.log("[Loricatus] Csatlakozva az új szobához");
@@ -161,6 +162,35 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         dispatch({ type: 'START_GAME', players });
     };
 
+    const leaveRoom = async () => {
+        if (state.roomId && user) {
+            try {
+                const docRef = doc(db, 'games', state.roomId);
+                await updateDoc(docRef, {
+                    joinedUids: joinedUids.filter(uid => uid !== user.uid)
+                });
+            } catch (e) {
+                console.error("[Loricatus] Kilépés hiba:", e);
+            }
+        }
+        clearSave();
+        dispatch({ type: 'SYNC_STATE', state: createInitialState() });
+    };
+
+    const startLocalGame = () => {
+        clearSave();
+        const players = [
+            { id: 'p1', name: 'Játékos 1 (Helyi)', color: '#c7fe1b', token: '🛰️', isBot: false, money: 1500, position: 0, inJail: false, jailTurns: 0, hasGetOutOfJailCard: 0, isBankrupt: false, properties: [], uid: 'local_p1' },
+            { id: 'p2', name: 'Loricatus AI (Gép)', color: '#0ea5e9', token: '🚁', isBot: true, money: 1500, position: 0, inJail: false, jailTurns: 0, hasGetOutOfJailCard: 0, isBankrupt: false, properties: [], uid: 'local_bot1' },
+            { id: 'p3', name: 'Cyberbot (Gép)', color: '#e879f9', token: '📡', isBot: true, money: 1500, position: 0, inJail: false, jailTurns: 0, hasGetOutOfJailCard: 0, isBankrupt: false, properties: [], uid: 'local_bot2' }
+        ];
+        dispatch({ type: 'SYNC_STATE', state: createInitialState() });
+        setTimeout(() => {
+            dispatch({ type: 'START_GAME', players });
+            onGameJoined('', 'local_p1');
+        }, 100);
+    };
+
     if (!user) {
         return (
             <div className="setup-container">
@@ -218,6 +248,14 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                             Várakozás a Host indítására...
                         </div>
                     )}
+
+                    <button
+                        className="btn-danger"
+                        style={{ width: '100%', padding: '0.8rem', marginTop: '1rem', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}
+                        onClick={leaveRoom}
+                    >
+                        KILÉPÉS A KÜLDETÉSBŐL
+                    </button>
 
                     {error && <p style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: '1rem' }}>{error}</p>}
                 </motion.div>
@@ -293,6 +331,26 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 {loading ? '...' : 'BELÉPÉS'}
                             </button>
                         </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>OFFLINE</span>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                    </div>
+
+                    <div className="sidebar-card">
+                        <h3>Lokális Játék</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Játssz helyben a beépített intelligencia ellen!
+                        </p>
+                        <button
+                            className="btn-primary"
+                            style={{ width: '100%', background: 'var(--text-secondary)', color: '#000' }}
+                            onClick={startLocalGame}
+                        >
+                            LOKÁLIS JÁTÉK INDÍTÁSA
+                        </button>
                     </div>
                 </div>
             </motion.div>
