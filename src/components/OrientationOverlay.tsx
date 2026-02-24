@@ -3,22 +3,46 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
     const [isPortrait, setIsPortrait] = useState(false);
+    const [needsFullscreen, setNeedsFullscreen] = useState(false);
 
     useEffect(() => {
         const checkOrientation = () => {
-            // Csak mobilon/tableten (max 1024px) és csak álló módban
-            const portrait = window.innerHeight > window.innerWidth && window.innerWidth < 1024;
+            const isMobile = window.innerWidth <= 1024;
+            const portrait = window.innerHeight > window.innerWidth && isMobile;
             setIsPortrait(portrait);
+
+            // Ismételjük meg, ha fekvőben van, de a böngésző UI elveszi a helyet (nincs fullscreen)
+            const isLandscape = window.innerWidth > window.innerHeight && isMobile;
+            const notFullscreen = !document.fullscreenElement;
+            const hasFullscreenApi = document.documentElement.requestFullscreen !== undefined;
+
+            if (isLandscape && notFullscreen && hasFullscreenApi) {
+                setNeedsFullscreen(true);
+            } else {
+                setNeedsFullscreen(false);
+            }
         };
 
         checkOrientation();
         window.addEventListener('resize', checkOrientation);
-        return () => window.removeEventListener('resize', checkOrientation);
+        document.addEventListener('fullscreenchange', checkOrientation);
+        return () => {
+            window.removeEventListener('resize', checkOrientation);
+            document.removeEventListener('fullscreenchange', checkOrientation);
+        };
     }, []);
+
+    const showOverlay = (isPortrait || needsFullscreen) && gameStarted;
+
+    const requestFS = () => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(e => console.error(e));
+        }
+    };
 
     return (
         <AnimatePresence>
-            {isPortrait && gameStarted && (
+            {showOverlay && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -38,13 +62,16 @@ export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
                         color: 'white',
                     }}
                 >
-                    {/* ── Digitális Forgatás Animáció (3s) ── */}
+                    {/* ── Digitális Forgatás Animáció VAGY Fullscreen ikon (3s) ── */}
                     <motion.div
                         style={{
                             position: 'relative',
                             width: '120px',
                             height: '120px',
                             marginBottom: '2.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                         }}
                     >
                         {/* Radar körök a háttérben */}
@@ -67,16 +94,16 @@ export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
                             }}
                         />
 
-                        {/* A telefon ikon forgatása */}
+                        {/* A telefon ikon forgatása vagy Képernyő Maximalizálás */}
                         <motion.div
-                            animate={{
+                            animate={isPortrait ? {
                                 rotate: [0, 90, 90, 0],
                                 scale: [1, 1.1, 1.1, 1]
-                            }}
+                            } : { scale: [1, 1.1, 1] }}
                             transition={{
                                 duration: 3,
                                 repeat: Infinity,
-                                times: [0, 0.4, 0.6, 1],
+                                times: isPortrait ? [0, 0.4, 0.6, 1] : [0, 0.5, 1],
                                 ease: "easeInOut"
                             }}
                             style={{
@@ -87,11 +114,17 @@ export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
                                 justifyContent: 'center'
                             }}
                         >
-                            <svg width="60" height="100" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 10px var(--neon-glow))' }}>
-                                <rect x="5" y="2" width="14" height="20" rx="3" ry="3" />
-                                <line x1="12" y1="18" x2="12" y2="18.01" strokeWidth="3" />
-                                <path d="M17 2H7" opacity="0.3" />
-                            </svg>
+                            {isPortrait ? (
+                                <svg width="60" height="100" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 10px var(--neon-glow))' }}>
+                                    <rect x="5" y="2" width="14" height="20" rx="3" ry="3" />
+                                    <line x1="12" y1="18" x2="12" y2="18.01" strokeWidth="3" />
+                                    <path d="M17 2H7" opacity="0.3" />
+                                </svg>
+                            ) : (
+                                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 10px var(--neon-glow))' }}>
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                </svg>
+                            )}
                         </motion.div>
                     </motion.div>
 
@@ -111,7 +144,7 @@ export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
                             textShadow: '0 0 20px var(--neon-glow)'
                         }}
                     >
-                        Digitális Korrekció Szükséges
+                        {isPortrait ? 'Digitális Korrekció Szükséges' : 'Teljes Képernyős Mód'}
                     </motion.h2>
 
                     <motion.p
@@ -124,11 +157,29 @@ export function OrientationOverlay({ gameStarted }: { gameStarted: boolean }) {
                             color: 'var(--text-secondary)',
                             maxWidth: '280px',
                             lineHeight: 1.6,
-                            marginBottom: '2.5rem'
+                            marginBottom: '1.5rem'
                         }}
                     >
-                        A <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>rendszer optimalizálása</span> érdekében fordítsd el a telefont fekvő helyzetbe!
+                        {isPortrait
+                            ? <span>A <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>rendszer optimalizálása</span> érdekében fordítsd el a telefont fekvő helyzetbe!</span>
+                            : <span>A HUD <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>hiánytalan megjelenítéséhez</span> rejtsd el a böngésző sávjait!</span>
+                        }
                     </motion.p>
+
+                    {!isPortrait && (
+                        <button
+                            className="btn-primary"
+                            style={{
+                                padding: '1rem 2rem',
+                                fontSize: '1rem',
+                                marginBottom: '2rem',
+                                boxShadow: '0 0 20px rgba(199, 254, 27, 0.4)'
+                            }}
+                            onClick={requestFS}
+                        >
+                            FULLSCREEN AKTIVÁLÁSA
+                        </button>
+                    )}
 
                     {/* ── 3 mp-es progress bar (Díszítés és visszaszámlálás érzet) ── */}
                     <div style={{

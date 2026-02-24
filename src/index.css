@@ -1883,36 +1883,37 @@ body {
   /* Betűméretek a táblán - vh-alapú scaling */
   /* Betűméretek a táblán - vmin alapú skálázás a torzulás ellen */
   .board-space .space-name {
-    font-size: 2vmin !important;
-    line-height: 1 !important;
+    font-size: 1.25vmin !important;
+    line-height: 1.05 !important;
   }
 
   .board-space .space-price {
-    font-size: 1.6vmin !important;
+    font-size: 1vmin !important;
   }
 
   .board-space.corner .space-name {
-    font-size: 2.3vmin !important;
+    font-size: 1.4vmin !important;
   }
 
-  /* HUD elemek kicsinyítése */
+  /* HUD elemek kicsinyítése és a drón dominánssá tétele */
   .hud-player-name {
-    font-size: 0.8rem !important;
+    font-size: 0.7rem !important;
   }
 
   .hud-balance-value {
-    font-size: 0.9rem !important;
+    font-size: 0.75rem !important;
   }
 
   .hud-token-container {
-    width: 50px !important;
-    height: 50px !important;
-    padding: 0.2rem !important;
+    width: 75px !important;
+    height: 75px !important;
+    padding: 0.4rem !important;
+    margin: 0.5rem auto !important; /* Középre igazítva és távolabb a tetejétől */
   }
 
   .hud-token-container svg {
-    width: 40px !important;
-    height: 40px !important;
+    width: 55px !important;
+    height: 55px !important;
   }
 
   .hud-token-name {
@@ -1933,12 +1934,12 @@ body {
 
   /* Címek a HUD-ban */
   .loricatus-hud div[style*="fontFamily: Orbitron"] {
-    font-size: 0.5rem !important;
+    font-size: 0.45rem !important;
     margin-top: 0.2rem !important;
   }
 
   .loricatus-hud div[style*="fontFamily: 'JetBrains Mono'"] {
-    font-size: 0.4rem !important;
+    font-size: 0.35rem !important;
   }
 
   /* Tábla közepén lévő szövegek */
