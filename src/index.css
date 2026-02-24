@@ -65,6 +65,16 @@ html {
   font-size: 14px;
 }
 
+@keyframes loricatusGridMove {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 30px 30px, 120px 120px, 120px 120px;
+  }
+}
+
 body {
   background: var(--bg-deep);
   color: var(--text-primary);
@@ -80,6 +90,7 @@ body {
     linear-gradient(to right, rgba(30, 41, 59, 0.15) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
   background-size: 30px 30px, 120px 120px, 120px 120px;
+  animation: loricatusGridMove 30s linear infinite;
 }
 
 /* Scrollbar */
@@ -733,7 +744,7 @@ body {
   }
 
   .setup-title {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
   }
 
   .setup-subtitle {
@@ -783,7 +794,7 @@ body {
   }
 
   .setup-title {
-    font-size: 3.2rem !important;
+    font-size: 2rem !important;
     margin-bottom: 0.5rem !important;
   }
 
@@ -826,8 +837,8 @@ body {
 .setup-title {
   font-family: 'Orbitron', 'Inter', sans-serif;
   font-weight: 900;
-  font-size: 2rem;
-  /* Reduced from 2.5rem */
+  font-size: 1.5rem;
+  /* Reduced for longer texts */
   text-align: center;
   background: linear-gradient(135deg, var(--neon), #d4ff57, var(--cyber));
   -webkit-background-clip: text;

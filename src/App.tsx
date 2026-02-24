@@ -61,6 +61,35 @@ function GameContent() {
     setRoomData(roomId || null);
   }, [dispatch, state]);
 
+  const [leftAlertMsg, setLeftAlertMsg] = useState<string | null>(null);
+  const [notifiedLeftUids, setNotifiedLeftUids] = useState<Set<string>>(new Set());
+  const localUid = useGame().localUid;
+
+  useEffect(() => {
+    if (gameState !== 'playing' || !state.roomId) return;
+
+    let newlyLeft = null;
+    state.players.forEach(p => {
+      if (p.isBankrupt && p.name.includes('(Kilépett)') && !notifiedLeftUids.has(p.id) && p.uid !== localUid) {
+        newlyLeft = p;
+      }
+    });
+
+    if (newlyLeft) {
+      setLeftAlertMsg(`A másik játékos (${(newlyLeft as any).name.replace(' (Kilépett)', '')}) elhagyta a játékot. Akarsz maradni és folytatni?`);
+      setNotifiedLeftUids(prev => new Set(prev).add((newlyLeft as any).id));
+    }
+  }, [state.players, gameState, state.roomId, notifiedLeftUids, localUid]);
+
+  const forceLeave = useCallback(() => {
+    if (state.roomId && localUid) {
+      dispatch({ type: 'PLAYER_LEFT', uid: localUid });
+    }
+    clearSave();
+    dispatch({ type: 'SYNC_STATE', state: createInitialState() });
+    window.location.reload();
+  }, [state.roomId, localUid, dispatch]);
+
   return (
     <div
       id="app-container"
@@ -102,6 +131,13 @@ function GameContent() {
           <AuctionPanel />
           <TradeResponseModal />
           <DebugPanel />
+          {leftAlertMsg && (
+            <PlayerLeftModal
+              message={leftAlertMsg}
+              onClose={() => setLeftAlertMsg(null)}
+              onLeave={forceLeave}
+            />
+          )}
         </>
       )}
     </div>
@@ -109,6 +145,25 @@ function GameContent() {
 }
 
 // --- SEGÉDKOMPONENSEK ---
+
+function PlayerLeftModal({ message, onClose, onLeave }: { message: string, onClose: () => void, onLeave: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(6px)'
+    }}>
+      <div style={{
+        background: 'var(--bg-board)', border: '1px solid #ef4444', boxShadow: '0 0 30px rgba(239, 68, 68, 0.3)', padding: '2.5rem', borderRadius: '12px', maxWidth: '400px', textAlign: 'center', margin: '1rem'
+      }}>
+        <h2 style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '1.4rem', fontFamily: 'Orbitron, sans-serif' }}>🚨 Kapcsolat Megszakadt</h2>
+        <p style={{ marginBottom: '2rem', fontSize: '0.95rem', color: 'var(--text-primary)' }}>{message}</p>
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <button className="btn-secondary" onClick={onClose} style={{ flex: 1, padding: '0.8rem', background: '#3b4252', border: 'none' }}>Maradok</button>
+          <button className="btn-danger" onClick={onLeave} style={{ flex: 1, padding: '0.8rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Kilépek</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CollapsibleEventLog() {
   const { state } = useGame();
