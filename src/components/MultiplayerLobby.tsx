@@ -295,8 +295,8 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
             >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
                     <img src={logoKicsi} alt="Logo" className="setup-logo" />
-                    <h1 className="setup-title">Multiplayer</h1>
-                    <p className="setup-subtitle">Loricatus Felhőalapú Kapcsolat</p>
+                    <h1 className="setup-title">Monopoly by Loricatus</h1>
+                    <p className="setup-subtitle">Repül, Rögzít, Segít</p>
                 </div>
 
                 {error && (
