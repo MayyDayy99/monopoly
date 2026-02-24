@@ -63,6 +63,40 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             return { ...action.state };
         }
 
+        case 'PLAYER_LEFT': {
+            // Find player by UID (multiplayer) or ID (local game)
+            const index = state.players.findIndex(p => p.uid === action.uid || p.id === action.uid);
+            if (index === -1) return state;
+            const playerLeft = state.players[index];
+            if (playerLeft.isBankrupt) return state; // Already bankrupt/left
+
+            const updatedPlayers = [...state.players];
+            updatedPlayers[index] = {
+                ...playerLeft,
+                isBankrupt: true,
+                name: `${playerLeft.name} (Kilépett)`,
+                money: 0,
+                properties: []
+            };
+
+            const updatedOwned = { ...state.ownedProperties };
+            Object.keys(updatedOwned).forEach(propId => {
+                if (updatedOwned[Number(propId)].ownerId === playerLeft.id) {
+                    delete updatedOwned[Number(propId)];
+                }
+            });
+
+            let newState = { ...state, players: updatedPlayers, ownedProperties: updatedOwned };
+            newState = addLog(newState, 'system', `🚨 ${playerLeft.name} megszakította a kapcsolatot. Minden ingatlana újra szabad!`, 'system');
+
+            // Ha épp ő volt soron, lezárjuk a kört
+            if (state.currentPlayerIndex === index && state.phase !== 'game-over') {
+                return gameReducer(newState, { type: 'END_TURN' });
+            }
+
+            return newState;
+        }
+
         // ──────────────────────────── START GAME ────────────────────────────
         case 'START_GAME': {
             const currentRules = state.houseRules;

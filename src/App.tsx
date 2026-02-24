@@ -22,7 +22,6 @@ import { useBotPlayer } from './engine/useBotPlayer';
 import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
 
-// Loricatus Lobby komponens importálása
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 import { clearSave } from './engine/storage';
 import { createInitialState } from './engine/gameReducer';
@@ -152,10 +151,13 @@ function CollapsibleEventLog() {
 }
 
 function LeaveGameButton() {
-  const { dispatch } = useGame();
+  const { state, dispatch, localUid } = useGame();
 
   const handleLeave = () => {
     if (confirm('Biztosan ki akarsz lépni a játékból? A jelenlegi állapotod törlődik.')) {
+      if (state.roomId && localUid) {
+        dispatch({ type: 'PLAYER_LEFT', uid: localUid });
+      }
       clearSave();
       dispatch({ type: 'SYNC_STATE', state: createInitialState() });
       window.location.reload();

@@ -145,10 +145,10 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
 
         const players = joinedUids.map((uid, idx) => ({
             id: `p${idx + 1}`,
-            name: uid === user?.uid ? 'Főhadiszállás (Én)' : `Ügynök ${idx + 1}`,
+            name: uid === user?.uid ? 'Főhadiszállás (Én)' : (uid.startsWith('bot_') ? `AI Gép ${idx}` : `Ügynök ${idx + 1}`),
             color: ['#c7fe1b', '#0ea5e9', '#e879f9', '#fb923c'][idx],
             token: ['🛰️', '🚁', '📡', '🖥️'][idx],
-            isBot: false,
+            isBot: uid.startsWith('bot_'),
             money: 1500,
             position: 0,
             inJail: false,
@@ -160,6 +160,18 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         }));
 
         dispatch({ type: 'START_GAME', players });
+    };
+
+    const addBot = async () => {
+        if (!state.roomId || joinedUids.length >= 4) return;
+        try {
+            const docRef = doc(db, 'games', state.roomId);
+            await updateDoc(docRef, {
+                joinedUids: arrayUnion(`bot_${Math.random().toString(36).substring(7)}`)
+            });
+        } catch (e) {
+            console.error("[Loricatus] Bot hozzáadás hiba:", e);
+        }
     };
 
     const leaveRoom = async () => {
@@ -226,7 +238,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 alignItems: 'center'
                             }}>
                                 <span style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
-                                    {idx === 0 ? '👑 HOST' : `👤 ÜGYNÖK ${idx + 1}`}
+                                    {idx === 0 ? '👑 HOST' : (uid.startsWith('bot_') ? `🤖 AI GÉP ${idx}` : `👤 ÜGYNÖK ${idx + 1}`)}
                                     {uid === user.uid && ' (Te)'}
                                 </span>
                                 <span style={{ color: 'var(--neon)', fontSize: '0.7rem' }}>KÉSZ</span>
@@ -235,14 +247,25 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                     </div>
 
                     {isHost ? (
-                        <button
-                            className="btn-primary"
-                            style={{ width: '100%', padding: '1rem' }}
-                            disabled={joinedUids.length < 2}
-                            onClick={startMission}
-                        >
-                            {joinedUids.length < 2 ? 'KÉT ÜGYNÖK SZÜKSÉGES' : '🚀 MISSZIÓ INDÍTÁSA'}
-                        </button>
+                        <>
+                            {joinedUids.length < 4 && (
+                                <button
+                                    className="btn-secondary"
+                                    style={{ width: '100%', padding: '0.8rem', marginBottom: '1rem', background: '#3b82f6', border: 'none', color: '#fff' }}
+                                    onClick={addBot}
+                                >
+                                    🤖 AI GÉP HOZZÁADÁSA
+                                </button>
+                            )}
+                            <button
+                                className="btn-primary"
+                                style={{ width: '100%', padding: '1rem' }}
+                                disabled={joinedUids.length < 2}
+                                onClick={startMission}
+                            >
+                                {joinedUids.length < 2 ? 'KÉT RÉSZTVEVŐ SZÜKSÉGES' : '🚀 MISSZIÓ INDÍTÁSA'}
+                            </button>
+                        </>
                     ) : (
                         <div style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                             Várakozás a Host indítására...

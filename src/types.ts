@@ -231,4 +231,5 @@ export type GameAction =
     | { type: 'SET_TOKEN_ANIM'; animState: TokenAnimState }
     | { type: 'MOVE_STEP' }
     | { type: 'MOVE_TELEPORT'; position: number; passedGo?: boolean }
+    | { type: 'PLAYER_LEFT'; uid: string }
     | { type: 'SYNC_STATE'; state: GameState };
