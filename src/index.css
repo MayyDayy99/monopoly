@@ -1185,7 +1185,7 @@ body {
 .hud-player-name {
   font-family: 'Orbitron', 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   letter-spacing: 0.05em;
   margin-bottom: 0.3rem;
 }
@@ -1208,7 +1208,7 @@ body {
 .hud-balance-value {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: var(--neon);
   text-shadow: 0 0 12px var(--neon-glow);
 }
