@@ -321,12 +321,13 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 placeholder="LR-XXXX"
                                 value={roomIdInput}
                                 onChange={(e) => setRoomIdInput(e.target.value.toUpperCase())}
-                                style={{ flex: 1, textAlign: 'center' }}
+                                style={{ flex: 3, textAlign: 'center', minWidth: 0, padding: '0.75rem 0.5rem' }}
                             />
                             <button
                                 className="btn-primary"
                                 onClick={joinRoom}
                                 disabled={loading || !roomIdInput}
+                                style={{ flex: 1, padding: '0.75rem 0', minWidth: '80px', fontSize: '0.8rem' }}
                             >
                                 {loading ? '...' : 'BELÉPÉS'}
                             </button>
