@@ -68,7 +68,7 @@ function GameContent() {
   useEffect(() => {
     if (gameState !== 'playing' || !state.roomId) return;
 
-    let newlyLeft = null;
+    let newlyLeft: import('./types').Player | null = null;
     state.players.forEach(p => {
       if (p.isBankrupt && p.name.includes('(Kilépett)') && !notifiedLeftUids.has(p.id) && p.uid !== localUid) {
         newlyLeft = p;
