@@ -70,6 +70,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         setLoading(true);
         setError(null);
         try {
+            console.log("[Loricatus] Létrehozás kezdődik, User UID:", user.uid);
             const newId = generateRoomId();
             const initialState = createInitialState();
 
@@ -81,13 +82,17 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                 joinedUids: [user.uid],
                 phase: 'setup',
             };
-
+            
+            console.log("[Loricatus] Mentés a Firestore-ba: ", newId);
             await setDoc(doc(db, 'games', newId), gameData);
+            console.log("[Loricatus] Csatlakozva az új szobához");
             onGameJoined(newId, user.uid);
             setIsHost(true);
         } catch (e: any) {
+            console.error("[Loricatus] Szobakészítés HIBA:", e);
             setError("Sikertelen szobakészítés: " + e.message);
         } finally {
+            console.log("[Loricatus] Szobakészítés finally blokk");
             setLoading(false);
         }
     };
@@ -97,9 +102,12 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         setLoading(true);
         setError(null);
         try {
+            console.log("[Loricatus] Csatlakozás szobához, id:", roomIdInput);
             const id = roomIdInput.toUpperCase().trim();
             const docRef = doc(db, 'games', id);
+            console.log("[Loricatus] Adatok lekérése a Firestore-ból...");
             const docSnap = await getDoc(docRef);
+            console.log("[Loricatus] Adatok lekérve", docSnap.exists());
 
             if (!docSnap.exists()) {
                 setError("A megadott küldetéskód nem létezik.");
@@ -115,6 +123,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
             }
 
             if (!data.joinedUids.includes(user.uid)) {
+                console.log("[Loricatus] Új ügynök csatlakozik, updateDoc hívás");
                 await updateDoc(docRef, {
                     joinedUids: arrayUnion(user.uid)
                 });
@@ -122,8 +131,10 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
 
             onGameJoined(id, user.uid);
         } catch (e: any) {
+            console.error("[Loricatus] Csatlakozás HIBA:", e);
             setError("Hiba a csatlakozáskor: " + e.message);
         } finally {
+            console.log("[Loricatus] Csatlakozás finally blokk");
             setLoading(false);
         }
     };

@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist --repo https://github.com/MayyDayy99/monopoly.git"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.0",
