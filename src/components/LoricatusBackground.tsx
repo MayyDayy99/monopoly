@@ -217,22 +217,7 @@ export const LoricatusBackground: React.FC = () => {
 
         // ─── RENDER LOOP ───
         const render = () => {
-            // Blueprint rács az ürítés helyett (nagyon halvány)
-            ctx.fillStyle = BG_DEEP;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Halvány rácsvonalak
-            ctx.strokeStyle = 'rgba(30, 41, 59, 0.3)';
-            ctx.lineWidth = 0.5;
-            const gridSize = 50;
-            ctx.beginPath();
-            for (let x = 0; x < canvas.width; x += gridSize) {
-                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
-            }
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
-            }
-            ctx.stroke();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Drónok update és draw
             drones.forEach(drone => {

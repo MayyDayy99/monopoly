@@ -356,7 +356,16 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                                 className="btn-primary"
                                 onClick={joinRoom}
                                 disabled={loading || !roomIdInput}
-                                style={{ flex: 1, padding: '0', height: '38px', minWidth: '70px', fontSize: '0.75rem' }}
+                                style={{
+                                    flex: 1,
+                                    height: '38px',
+                                    minWidth: '80px',
+                                    fontSize: '0.8rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '0'
+                                }}
                             >
                                 {loading ? '...' : 'BELÉPÉS'}
                             </button>
@@ -376,7 +385,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                         </p>
                         <button
                             className="btn-primary"
-                            style={{ width: '100%', padding: '0.6rem', background: 'var(--text-secondary)', color: '#000' }}
+                            style={{ width: '100%', padding: '0.8rem' }}
                             onClick={startLocalGame}
                         >
                             LOKÁLIS JÁTÉK INDÍTÁSA
