@@ -108,6 +108,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
             let newState: GameState = {
                 ...createInitialState(),
+                roomId: state.roomId,
+                hostId: state.hostId,
                 players: updatedPlayers,
                 ownedProperties: newOwned,
                 phase: 'rolling',
