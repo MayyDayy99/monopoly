@@ -207,6 +207,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
     if (!user) {
         return (
             <div className="setup-container">
+                <LoricatusBackground />
                 <div className="setup-card" style={{ textAlign: 'center' }}>
                     <div className="animate-pulse" style={{ color: 'var(--neon)' }}>Kapcsolódás a Loricatus hálózathoz...</div>
                     <p style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Ellenőrizd, hogy a Firebase Anonymous Auth engedélyezve van-e!</p>
