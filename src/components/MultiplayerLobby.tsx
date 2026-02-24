@@ -12,6 +12,7 @@ import { createInitialState } from '../engine/gameReducer';
 import { motion } from 'framer-motion';
 import logoKicsi from '../assets/logo_kicsi.png';
 import { clearSave } from '../engine/storage';
+import { LoricatusBackground } from './LoricatusBackground';
 
 interface LobbyProps {
     onGameJoined: (roomId: string, playerUid: string) => void;
@@ -217,13 +218,14 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
     if (state.roomId) {
         return (
             <div className="setup-container">
+                <LoricatusBackground />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="setup-card"
                     style={{ textAlign: 'center' }}
                 >
-                    <h1 className="setup-title" style={{ fontSize: '2.5rem', color: 'var(--neon)' }}>{state.roomId}</h1>
+                    <h1 className="setup-title">{state.roomId}</h1>
                     <p className="setup-subtitle">Küldetéskód — Oszd meg a többiekkel!</p>
 
                     <div style={{ margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -288,6 +290,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
 
     return (
         <div className="setup-container">
+            <LoricatusBackground />
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
