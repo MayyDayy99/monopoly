@@ -104,7 +104,7 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
         setError(null);
         try {
             console.log("[Loricatus] Csatlakozás szobához, id:", roomIdInput);
-            const id = roomIdInput.toUpperCase().trim();
+            const id = 'LR-' + roomIdInput.toUpperCase().trim();
             const docRef = doc(db, 'games', id);
             console.log("[Loricatus] Adatok lekérése a Firestore-ból...");
             const docSnap = await getDoc(docRef);
@@ -338,14 +338,16 @@ export function MultiplayerLobby({ onGameJoined }: LobbyProps) {
                     <div className="sidebar-card">
                         <h3>Csatlakozás</h3>
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            <input
-                                type="text"
-                                className="setup-input"
-                                placeholder="LR-XXXX"
-                                value={roomIdInput}
-                                onChange={(e) => setRoomIdInput(e.target.value.toUpperCase())}
-                                style={{ flex: 3, textAlign: 'center', minWidth: 0, padding: '0.75rem 0.5rem' }}
-                            />
+                            <div className="setup-input" style={{ flex: 3, display: 'flex', alignItems: 'center', padding: '0', overflow: 'hidden' }}>
+                                <span style={{ padding: '0.75rem 0.5rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', borderRight: '1px solid var(--border)', fontFamily: 'JetBrains Mono', fontSize: '0.9rem' }}>LR-</span>
+                                <input
+                                    type="text"
+                                    placeholder="XXXX"
+                                    value={roomIdInput}
+                                    onChange={(e) => setRoomIdInput(e.target.value.toUpperCase().replace(/LR-/i, ''))}
+                                    style={{ flex: 1, textAlign: 'center', minWidth: 0, padding: '0.75rem 0.5rem', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontSize: '0.9rem' }}
+                                />
+                            </div>
                             <button
                                 className="btn-primary"
                                 onClick={joinRoom}
