@@ -133,6 +133,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
+  container-type: inline-size;
   box-shadow:
     var(--shadow-glow),
     inset 0 0 80px rgba(0, 0, 0, 0.4);
@@ -198,7 +199,8 @@ body {
 
 .board-space .space-name {
   font-family: 'Inter', sans-serif;
-  font-size: 1.3vmin;
+  font-size: 8.5cqi;
+  /* Container query unit - relative to the space width */
   font-weight: 600;
   text-align: center;
   line-height: 1;
@@ -217,7 +219,7 @@ body {
 
 .board-space .space-price {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.1vmin;
+  font-size: 7.5cqi;
   color: var(--neon);
   z-index: 1;
   margin-top: 1px;
@@ -230,7 +232,7 @@ body {
 }
 
 .board-space.corner .space-name {
-  font-size: 1.5vmin;
+  font-size: 10cqi;
   font-weight: 800;
   color: var(--neon);
   text-transform: uppercase;
@@ -1670,12 +1672,11 @@ body {
     border-width: 2px !important;
   }
 
-  /* Mezők belső skálázása dinamikus viewport egységekkel */
+  /* Mezők belső skálázása dinamikus container egységekkel */
   .board-space .space-name {
-    font-size: 0.6vw !important;
+    font-size: 8.5cqi !important;
     padding: 0 1px !important;
     line-height: 0.9 !important;
-    max-height: 2vw;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -1685,7 +1686,7 @@ body {
   }
 
   .board-space .space-price {
-    font-size: 0.8vw !important;
+    font-size: 7.5cqi !important;
     margin-top: 1px !important;
   }
 
@@ -1700,7 +1701,7 @@ body {
   }
 
   .board-space.corner .space-name {
-    font-size: 1.0vw !important;
+    font-size: 10cqi !important;
   }
 
   .board-space .color-bar {
@@ -1916,9 +1917,9 @@ body {
     border-width: 1px !important;
   }
 
-  /* Betűméretek a táblán - vmin alapú skálázás a torzulás ellen */
+  /* Betűméretek a táblán - container alapján skálázás a torzulás ellen */
   .board-space .space-name {
-    font-size: 1.1vmin !important;
+    font-size: 9cqi !important;
     line-height: 0.8 !important;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -1929,11 +1930,11 @@ body {
   }
 
   .board-space .space-price {
-    font-size: 1.2vmin !important;
+    font-size: 8cqi !important;
   }
 
   .board-space.corner .space-name {
-    font-size: 2vmin !important;
+    font-size: 11cqi !important;
   }
 
   /* HUD elemek kicsinyítése */
