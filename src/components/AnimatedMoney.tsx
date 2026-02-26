@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { playSound } from '../engine/soundManager';
 
 interface AnimatedMoneyProps {
     value: number;
@@ -24,7 +25,9 @@ export function AnimatedMoney({
     // #Audit fix: Adjust state when props change (standard React pattern)
     if (value !== prevVal) {
         setPrevVal(value);
-        setFlash(value > prevVal ? 'up' : 'down');
+        const direction = value > prevVal ? 'up' : 'down';
+        setFlash(direction);
+        playSound(direction === 'up' ? 'money-gain' : 'money-loss');
     }
 
     useEffect(() => {

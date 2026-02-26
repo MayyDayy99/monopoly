@@ -3,7 +3,7 @@
 // Szigorú nézet-kikényszerítés és Firebase integráció
 // ============================================================
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameProvider } from './engine/GameContext';
 import { useGame } from './engine/GameHooks';
@@ -23,6 +23,7 @@ import { BOARD_SPACES, COLOR_GROUP_COLORS, COLOR_GROUPS } from './data/board';
 import type { ColorGroup } from './types';
 
 import { MultiplayerLobby } from './components/MultiplayerLobby';
+import { SplashScreen } from './components/SplashScreen';
 import { clearSave } from './engine/storage';
 import { createInitialState } from './engine/gameReducer';
 
@@ -296,10 +297,26 @@ export default function App() {
 function GameWrapper() {
   const { state } = useGame();
   const gameStarted = state.phase !== 'setup';
+  const shownRef = useRef(false);
+  const [splashDone, setSplashDone] = useState(() => {
+    // Ne mutassuk a splash-t minden egyes hot-reload után fejlesztés közben
+    if (import.meta.env.DEV && sessionStorage.getItem('splash-shown')) return true;
+    return false;
+  });
+
+  const handleSplashDone = useCallback(() => {
+    if (!shownRef.current) {
+      shownRef.current = true;
+      if (import.meta.env.DEV) sessionStorage.setItem('splash-shown', '1');
+      setSplashDone(true);
+    }
+  }, []);
+
   return (
     <>
+      {!splashDone && <SplashScreen onDone={handleSplashDone} />}
       <OrientationOverlay gameStarted={gameStarted} />
-      <GameContent />
+      {splashDone && <GameContent />}
     </>
   );
 }

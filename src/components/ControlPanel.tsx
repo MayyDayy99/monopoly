@@ -6,11 +6,13 @@ import { useGame, useTurnTimerExpired } from '../engine/GameHooks';
 import { BOARD_SPACES } from '../data/board';
 import { Dice } from './Dice';
 import { canRaiseFunds } from '../engine/gameLogic';
+import { useSound } from '../engine/soundManager';
 
 export function ControlPanel() {
     const { state, dispatch, localUid } = useGame();
     const isExpired = useTurnTimerExpired();
     const [rolling, setRolling] = useState(false);
+    const { play } = useSound();
     const currentPlayer = state.players[state.currentPlayerIndex];
 
     // Szigorú körvédelem Multiplayer esetén
@@ -21,11 +23,12 @@ export function ControlPanel() {
     const handleRoll = useCallback(() => {
         if (state.phase !== 'rolling' || rolling) return;
         setRolling(true);
+        play('dice-roll');
         setTimeout(() => {
             dispatch({ type: 'ROLL_DICE' });
             setRolling(false);
         }, 600);
-    }, [state.phase, rolling, dispatch]);
+    }, [state.phase, rolling, dispatch, play]);
 
     if (!currentPlayer || state.phase === 'setup' || state.phase === 'game-over') return null;
 
@@ -34,22 +37,27 @@ export function ControlPanel() {
     const canLiquidate = canRaiseFunds(state, currentPlayer.id);
 
     const handleBuy = () => {
+        play('buy-property');
         dispatch({ type: 'BUY_PROPERTY' });
     };
 
     const handleEndTurn = () => {
+        play('turn-change');
         dispatch({ type: 'END_TURN' });
     };
 
     const handlePayFine = () => {
+        play('money-loss');
         dispatch({ type: 'PAY_JAIL_FINE' });
     };
 
     const handleUseJailCard = () => {
+        play('card-draw');
         dispatch({ type: 'USE_JAIL_CARD' });
     };
 
     const handleResolveCard = () => {
+        play('card-draw');
         dispatch({ type: 'RESOLVE_CARD' });
     };
 

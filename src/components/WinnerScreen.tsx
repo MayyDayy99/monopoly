@@ -1,16 +1,24 @@
 // ============================================================
 // WINNER SCREEN — Victory overlay with detailed stats (#85)
 // ============================================================
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import logoKicsi from '../assets/logo_kicsi.png';
 import { useGame } from '../engine/GameHooks';
 import { clearSave } from '../engine/storage';
 import { calculateNetWorth } from '../engine/gameLogic';
+import { playSound } from '../engine/soundManager';
 
 export function WinnerScreen() {
     const { state } = useGame();
+    const isGameOver = state.phase === 'game-over' && !!state.winner;
 
-    if (state.phase !== 'game-over' || !state.winner) return null;
+    // Victory fanfare — a hook mindig fut, de csak akkor szól, ha győztünk
+    useEffect(() => {
+        if (isGameOver) playSound('victory');
+    }, [isGameOver]);
+
+    if (!isGameOver) return null;
 
     const winner = state.players.find(p => p.id === state.winner);
     if (!winner) return null;
@@ -18,6 +26,20 @@ export function WinnerScreen() {
     const handleReload = () => {
         clearSave();
         window.location.reload();
+    };
+
+    const handleShare = async () => {
+        const netWorth = calculateNetWorth(state, winner.id);
+        const ownedCount = Object.values(state.ownedProperties).filter(o => o.ownerId === winner.id).length;
+        const text = `Megnyertem a Monopoly by Loricatus játékot! 🏆\n${winner.token} ${winner.name} — ${netWorth.toLocaleString()}k Loricatus Digitális vagyon, ${ownedCount} ingatlan\n\n"Digitalizáld a múltat, építsd a jövőt!" — loricatus.hu`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Monopoly by Loricatus — Győzelem!', text });
+            } catch { /* Megoszt párbeszéd bezárva */ }
+        } else {
+            await navigator.clipboard.writeText(text);
+            alert('Eredmény vágólapra másolva!');
+        }
     };
 
     // Calculate stats
@@ -132,23 +154,50 @@ export function WinnerScreen() {
                     ))}
                 </motion.div>
 
-                <motion.button
-                    className="btn-primary"
-                    onClick={handleReload}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{
-                        fontSize: '1.1rem',
-                        padding: '0.8rem 2rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.6rem'
-                    }}
-                >
-                    <img src={logoKicsi} alt="" style={{ width: '20px', height: 'auto' }} />
-                    Új játék
-                </motion.button>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <motion.button
+                        className="btn-primary"
+                        onClick={handleReload}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        style={{
+                            fontSize: '1rem',
+                            padding: '0.7rem 1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}
+                    >
+                        <img src={logoKicsi} alt="" style={{ width: '18px', height: 'auto' }} />
+                        Új játék
+                    </motion.button>
+                    <motion.button
+                        onClick={handleShare}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        style={{
+                            fontSize: '1rem',
+                            padding: '0.7rem 1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            background: 'transparent',
+                            border: '1px solid var(--border-active)',
+                            color: 'var(--neon)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontFamily: 'Orbitron, sans-serif',
+                            fontWeight: 600,
+                            letterSpacing: '0.05em',
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        Megosztás
+                    </motion.button>
+                </div>
             </motion.div>
         </div>
     );
